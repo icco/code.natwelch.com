@@ -2,15 +2,14 @@
 #
 # @author Nat Welch - https://github.com/icco
 
-require 'models'
+require './models'
 
 configure do
   set :sessions, true
-  DB = Sequel.connect(ENV['DATABASE_URL'] || 'sqlite://db/data.db')
 end
 
 get '/' do
-  @repos = Repos.all
+  @repos = Repo.all
   erb :index, :locals => {}
 end
 

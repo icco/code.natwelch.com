@@ -3,7 +3,7 @@ require 'bundler'
 
 Bundler.require
 
-require 'models'
+require './models'
 
 desc "Writes current repo counts to db."
 task :cron do
