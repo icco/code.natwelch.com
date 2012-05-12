@@ -6,7 +6,7 @@ Sequel.migration do
       String :user
       Integer :forks
       Integer :watchers
-      DateTime :create_date
+      DateTime :created_on
     end
   end
 end

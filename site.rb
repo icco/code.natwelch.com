@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
-# An app for ...
+#
 # @author Nat Welch - https://github.com/icco
+
+require 'models'
 
 configure do
   set :sessions, true
@@ -8,21 +10,11 @@ configure do
 end
 
 get '/' do
+  @repos = Repos.all
   erb :index, :locals => {}
 end
 
 get '/style.css' do
   content_type 'text/css', :charset => 'utf-8'
   less :style
-end
-
-get '/:id' do
-  Entry.filter(:id => params[:id]).first.to_s
-end
-
-post '/' do
-  redirect '/'
-end
-
-class Entry < Sequel::Model(:entries)
 end

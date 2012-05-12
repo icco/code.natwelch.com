@@ -3,13 +3,23 @@ require 'bundler'
 
 Bundler.require
 
+require 'models'
+
 desc "Writes current repo counts to db."
 task :cron do
+  user_name = "icco"
   herder = OctocatHerder.new
-  me = herder.user "icco"
+  me = herder.user user_name
 
   me.repositories.each do |repo|
-    puts "#{repo.name}\t#{repo.forks}\t#{repo.watchers}"
+    #puts "#{repo.name}\t#{repo.forks}\t#{repo.watchers}"
+    r = Repo.new
+    r.user = user_name
+    r.repo = repo.name
+    r.watchers = repo.watchers
+    r.forks = repo.forks
+    r.created_on = Time.now
+    r.save
   end
 end
 
