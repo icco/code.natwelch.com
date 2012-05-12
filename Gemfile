@@ -4,7 +4,7 @@ gem "heroku"
 gem "json"
 gem "less"
 gem "multi_json"
-gem "octokit"
+gem "octocat_herder"
 gem "pg", :groups => [:production]
 gem "rack_csrf", :require => "rack/csrf"
 gem "rake"
