@@ -49,6 +49,8 @@ GEM
     sanitize (2.0.3)
       nokogiri (>= 1.4.4, < 1.6)
     sequel (3.35.0)
+    shotgun (0.9)
+      rack (>= 1.0)
     sinatra (1.3.2)
       rack (~> 1.3, >= 1.3.6)
       rack-protection (~> 1.2)
@@ -68,11 +70,12 @@ DEPENDENCIES
   multi_json
   octocat_herder
   pg
-  rack (~> 1.4.1)
+  rack (~> 1.4)
   rack_csrf
   rake
   sanitize
   sequel
+  shotgun
   sinatra
   sqlite3
   taps!
