@@ -15,7 +15,6 @@
         // Date formatter function
         var parse = d3.time.format("%Y-%m-%d %H:%M:%S").parse;
 
-
         // Chart dimensions
         var m = [80, 80, 80, 80]; // Margins
         var w = 960 - m[1] - m[3];
@@ -38,10 +37,21 @@
 
         // A line generator, for the dark stroke.
         // TODO(icco): Figure htf this works...
-        var line = d3.svg.line()
+        var line1 = d3.svg.line()
           .interpolate("monotone")
           .x(function(d) { return x(d.date); })
           .y(function(d) { return y(d.repos); });
+
+        var line2 = d3.svg.line()
+          .interpolate("monotone")
+          .x(function(d) { return x(d.date); })
+          .y(function(d) { return y(d.watchers); });
+
+        var line3 = d3.svg.line()
+          .interpolate("monotone")
+          .x(function(d) { return x(d.date); })
+          .y(function(d) { return y(d.forks); });
+
 
         // The minified js import at the top gives us all of the d3 plugins. FOR FREE!
         d3.csv("/data.csv", function(data) {
@@ -58,7 +68,7 @@
 
             // Compute the minimum and maximum date, and the maximum price.
             x.domain([values[0].date, values[values.length - 1].date]);
-            y.domain([0, d3.max(values, function(d) { return d.repos; })]).nice();
+            y.domain([0, d3.max(values, function(d) { return Math.max(d.forks, d.watchers, d.repos); })]).nice();
 
             // Add an SVG element with the desired dimensions and margin.
             var svg = d3.select("body").append("svg:svg")
@@ -92,18 +102,26 @@
               .attr("transform", "translate(" + w + ",0)")
               .call(yAxis);
 
-            // Add the line path.
+            // Add the line paths.
             svg.append("svg:path")
               .attr("class", "line")
               .attr("clip-path", "url(#clip)")
-              .attr("d", line(values));
+              .attr("d", line1(values));
+            svg.append("svg:path")
+              .attr("class", "line")
+              .attr("clip-path", "url(#clip)")
+              .attr("d", line2(values));
+            svg.append("svg:path")
+              .attr("class", "line")
+              .attr("clip-path", "url(#clip)")
+              .attr("d", line3(values));
 
             // Add a small label for the name.
             svg.append("svg:text")
               .attr("x", w - 6)
               .attr("y", h - 6)
               .attr("text-anchor", "end")
-              .text("icco's repos");
+              .text("github.com/icco");
         });
       </script>
     </div>
