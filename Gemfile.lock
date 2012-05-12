@@ -13,6 +13,7 @@ GEM
       netrc (~> 0.7.1)
       rest-client (~> 1.6.1)
       rubyzip
+    json (1.7.3)
     launchy (2.1.0)
       addressable (~> 2.2.6)
     less (2.2.1)
@@ -22,19 +23,25 @@ GEM
     multi_json (1.3.5)
     multipart-post (1.1.5)
     netrc (0.7.1)
+    nokogiri (1.5.2)
     octokit (1.0.7)
       addressable (~> 2.2)
       faraday (~> 0.8)
       faraday_middleware (~> 0.8)
       hashie (~> 1.2)
       multi_json (~> 1.3)
+    pg (0.13.2)
     rack (1.4.1)
     rack-protection (1.2.0)
       rack
+    rack_csrf (2.4.0)
+      rack (>= 0.9)
     rake (0.9.2.2)
     rest-client (1.6.7)
       mime-types (>= 1.16)
     rubyzip (0.9.8)
+    sanitize (2.0.3)
+      nokogiri (>= 1.4.4, < 1.6)
     sequel (3.35.0)
     sinatra (1.3.2)
       rack (~> 1.3, >= 1.3.6)
@@ -50,9 +57,15 @@ PLATFORMS
 
 DEPENDENCIES
   heroku
+  json
   less
+  multi_json
   octokit
+  pg
+  rack (~> 1.4.1)
+  rack_csrf
   rake
+  sanitize
   sequel
   sinatra
   sqlite3
