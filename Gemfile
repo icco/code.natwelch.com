@@ -12,5 +12,6 @@ gem "sanitize"
 gem "sequel"
 gem "sinatra"
 gem "sqlite3", :groups => [:development]
+gem "taps"
 gem "therubyracer"
 gem "rack", "~> 1.4.1"
