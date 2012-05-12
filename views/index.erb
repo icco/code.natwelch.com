@@ -5,8 +5,29 @@
     <link type="text/css" rel="stylesheet" href="style.css" />
   </head>
   <body>
-
     <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
     <script src="http://d3js.org/d3.v2.min.js"></script>
+
+ <script type="text/javascript">
+
+var m = [20, 20, 30, 20],
+    w = 960 - m[1] - m[3],
+    h = 500 - m[0] - m[2];
+
+var x,
+    y,
+    duration = 1500,
+    delay = 500;
+
+var color = d3.scale.category10();
+
+var svg = d3.select("body").append("svg:svg")
+    .attr("width", w + m[1] + m[3])
+    .attr("height", h + m[0] + m[2])
+  .append("svg:g")
+    .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
+
+</script>
+
   </body>
 </html>

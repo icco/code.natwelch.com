@@ -9,8 +9,12 @@ configure do
 end
 
 get '/' do
-  @repos = Repo.all
-  erb :index, :locals => {}
+  erb :index
+end
+
+get '/data.csv' do
+  @stats = StatEntry.all
+  erb :"data.csv"
 end
 
 get '/style.css' do
