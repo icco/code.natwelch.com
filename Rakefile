@@ -11,16 +11,20 @@ task :cron do
   herder = OctocatHerder.new
   me = herder.user user_name
 
+  stat = StatEntry.new
+  stat.user = user_name
+  stat.created_on = Time.now
+  stat.save # save to init default values.
+
   me.repositories.each do |repo|
-    #puts "#{repo.name}\t#{repo.forks}\t#{repo.watchers}"
-    r = Repo.new
-    r.user = user_name
-    r.repo = repo.name
-    r.watchers = repo.watchers
-    r.forks = repo.forks
-    r.created_on = Time.now
-    r.save
+    r = Repo.factory(repo.name, user_name, repo.watchers, repo.forks)
+
+    stat.repos += 1
+    stat.watchers += r.watchers
+    stat.forks += r.forks
   end
+
+  p stat.save
 end
 
 namespace :db do

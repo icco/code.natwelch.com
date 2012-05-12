@@ -12,8 +12,7 @@ test/tmp
 test/version_tmp
 tmp
 *.db
-
-# YARD artifacts
+.rake_t_cache
 .yardoc
 _yardoc
 doc/
