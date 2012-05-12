@@ -12,21 +12,18 @@
         d3.csv("/data.csv", function(data1) {
 
             /* Read CSV file: first row =>  year,top1,top5  */
-            var maxval = 0,
-            sampsize = 0;
-            var label_array = new Array(),
-            val_array1 = new Array();
+            var maxval = 0, sampsize = 0;
+            var label_array = new Array(), val_array1 = new Array();
 
             sampsize = data1.length;
 
             for (var i=0; i < sampsize; i++) {
-            label_array[i] = parseInt(data1[i].year);
-            val_array1[i] = { x: label_array[i], y: parseFloat(data1[i].p99), z: parseFloat(data1[i].p95) };
-            maxval = Math.max(maxval, parseFloat(data1[i].p99), parseFloat(data1[i].p95) );
+              label_array[i] = parseInt(data1[i].date);
+              val_array1[i] = { x: label_array[i], y: data1[i].forks, z: data1[i].watchers };
+              maxval = Math.max(maxval, data1[i].watchers, data1[i].forks );
             }
 
             maxval = (1 + Math.floor(maxval / 10)) * 10;
-
 
             var  w = 815,
             h = 500,
@@ -118,38 +115,6 @@
               .attr("cx", function(d) { return x(d.x); })
               .attr("cy", function(d) { return y(d.z); })
               .attr("r", 1);
-
-            // -----------------------------
-            // Add Title then Legend
-            // -----------------------------
-            vis.append("svg:text")
-              .attr("x", w/4)
-              .attr("y", 20)
-              .text("% share of income (excluding capital gains): U.S. 1920-2008");
-
-            vis.append("svg:rect")
-              .attr("x", w/2 - 20)
-              .attr("y", 50)
-              .attr("stroke", "darkblue")
-              .attr("height", 2)
-              .attr("width", 40);
-
-            vis.append("svg:text")
-              .attr("x", 30 + w/2)
-              .attr("y", 55)
-              .text("Top 5% households");
-
-            vis.append("svg:rect")
-              .attr("x", w/2 - 20)
-              .attr("y", 80)
-              .attr("stroke", "maroon")
-              .attr("height", 2)
-              .attr("width", 40);
-
-            vis.append("svg:text")
-              .attr("x", 30 + w/2)
-              .attr("y", 85)
-              .text("Top 1% households");
         });
       </script>
     </div>
