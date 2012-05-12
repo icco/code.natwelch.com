@@ -14,12 +14,13 @@
             /* Read CSV file: first row =>  year,top1,top5  */
             var maxval = 0, sampsize = 0;
             var label_array = new Array(), val_array1 = new Array();
+            var dateFormat = d3.time.format("%Y-%m-%d");
 
             sampsize = data1.length;
 
             for (var i=0; i < sampsize; i++) {
-              label_array[i] = parseInt(data1[i].date);
-              val_array1[i] = { x: label_array[i], y: data1[i].forks, z: data1[i].watchers };
+              label_array[i] = dateFormat(new Date(data1[i].date));
+              val_array1[i] = { x: data1[i].date, y: data1[i].forks, z: data1[i].watchers };
               maxval = Math.max(maxval, data1[i].watchers, data1[i].forks );
             }
 
@@ -27,8 +28,8 @@
 
             var  w = 815,
             h = 500,
-            p = 30,
-            x = d3.scale.linear().domain([ label_array[0], label_array[sampsize-1] ]).range([0, w]),
+            p = 50,
+            x = d3.scale.linear().domain([ val_array1[0].x, val_array1[sampsize-1].x ]).range([0, w]),
             y = d3.scale.linear().domain([0, maxval]).range([h, 0]);
 
             var vis = d3.select("#paired-line-chart")
@@ -66,8 +67,7 @@
               .attr("y", h + 15)
               .attr("dy", ".71em")
               .attr("text-anchor", "middle")
-              .text(x.tickFormat(10))
-              .text(String);
+              .text(label_array[x]);
 
             rules.append("svg:text")
               .data(y.ticks(12))
@@ -76,7 +76,6 @@
               .attr("dy", ".35em")
               .attr("text-anchor", "end")
               .text(y.tickFormat(5));
-
 
             // Series I
             vis.append("svg:path")
@@ -107,7 +106,7 @@
                   .x(function(d) { return x(d.x); })
                   .y(function(d) { return y(d.z); }));
 
-            vis.select("circle.line")
+            vis.selectAll("circle.line")
               .data(val_array1)
               .enter().append("svg:circle")
               .attr("class", "line")
