@@ -2,101 +2,108 @@
 <html>
   <head>
     <title>Nat's Code History</title>
+
     <link type="text/css" rel="stylesheet" href="style.css" />
+
+    <script src="http://d3js.org/d3.v2.js"></script>
   </head>
   <body>
-    <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
-    <script src="http://d3js.org/d3.v2.min.js"></script>
+
     <div id="paired-line-chart">
       <script type="text/javascript">
 
+        // Date formatter function
+        var parse = d3.time.format("%Y-%m-%d %H:%M:%S").parse;
+
+
+        // Chart dimensions
+        var m = [80, 80, 80, 80]; // Margins
+        var w = 960 - m[1] - m[3];
+        var h = 500 - m[0] - m[2];
+
+        // Scales. Nice functions which auto resize things.
+        // Also defines the ranges for the graph (top and bottom numbers)
+        var x = d3.time.scale().range([0, w]);
+        var y = d3.scale.linear().range([h, 0]);
+        var xAxis = d3.svg.axis().scale(x).tickSize(-h).tickSubdivide(true);
+        var yAxis = d3.svg.axis().scale(y).ticks(4).orient("right");
+
+        // An area generator, for the light fill.
+        // TODO(icco): Figure htf this works...
+        var area = d3.svg.area()
+          .interpolate("monotone")
+          .x(function(d) { return x(d.date); })
+          .y0(h)
+          .y1(function(d) { return y(d.repos); });
+
+        // A line generator, for the dark stroke.
+        // TODO(icco): Figure htf this works...
+        var line = d3.svg.line()
+          .interpolate("monotone")
+          .x(function(d) { return x(d.date); })
+          .y(function(d) { return y(d.repos); });
+
         // The minified js import at the top gives us all of the d3 plugins. FOR FREE!
-        d3.csv("/data.csv", function(csv_rows) {
+        d3.csv("/data.csv", function(data) {
 
-            // Alright. We have csv_rows with date,repos,forks,watchers
-            // date will always be x, the other three will be y
-            var size = csv_rows.length;
+            // In theory we could filter our data here...
+            var values = data.filter(function(d) {
+              return true
+            });
 
-            // This creates a function to pass in a js date.
-            var dateFormat = d3.time.format("%Y-%m-%d");
+            // Does nice formatting on the data
+            values.forEach(function(d) {
+              d.date = parse(d.date);
+            });
 
-            // We're going to need to know the largest Y value.
-            var maxval = 0;
-            for (var i = 0; i < size; i++) {
-              maxval = Math.max(maxval, csv_rows[i].watchers, csv_rows[i].forks, csv_rows[i].repos);
-            }
+            // Compute the minimum and maximum date, and the maximum price.
+            x.domain([values[0].date, values[values.length - 1].date]);
+            y.domain([0, d3.max(values, function(d) { return d.repos; })]).nice();
 
-            // Chart dimensions
-            var w = 815;
-            var h = 500;
-            var p = 50; // Padding
-
-            // Scales. Nice functions which auto resize things.
-            // Also defines the ranges for the graph (top and bottom numbers)
-            var x = d3.time.scale().domain([ new Date(csv_rows[0].x), new Date(csv_rows[size-1].x) ]).range([0 + p, w - p]);
-            var y = d3.scale.linear().domain([0, maxval]).range([h, 0]);
-
-            // This defines the actual visualization box.
-            var vis = d3.select("#paired-line-chart")
-              .data(csv_rows)
-              .append("svg:svg")
-              .attr("width", w + p * 2)
-              .attr("height", h + p * 2)
+            // Add an SVG element with the desired dimensions and margin.
+            var svg = d3.select("body").append("svg:svg")
+              .attr("width", w + m[1] + m[3])
+              .attr("height", h + m[0] + m[2])
               .append("svg:g")
-              .attr("transform", "translate(" + p + "," + p + ")");
+              .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
 
-            var rules = vis.selectAll("g.rule")
-              .data(x.ticks(15))
-              .enter().append("svg:g")
-              .attr("class", "rule");
+            // Add the clip path.
+            svg.append("svg:clipPath")
+              .attr("id", "clip")
+              .append("svg:rect")
+              .attr("width", w)
+              .attr("height", h);
 
-            // Draw grid lines
-            rules.append("svg:line")
-              .attr("x1", x)
-              .attr("x2", x)
-              .attr("y1", 0)
-              .attr("y2", h - 1);
+            // Add the area path.
+            svg.append("svg:path")
+              .attr("class", "area")
+              .attr("clip-path", "url(#clip)")
+              .attr("d", area(values));
 
-            rules.append("svg:line")
-              .attr("class", function(d) { return d ? null : "axis"; })
-              .data(y.ticks(10))
-              .attr("y1", y)
-              .attr("y2", y)
-              .attr("x1", 0)
-              .attr("x2", w - 10);
+            // Add the x-axis.
+            svg.append("svg:g")
+              .attr("class", "x axis")
+              .attr("transform", "translate(0," + h + ")")
+              .call(xAxis);
 
-            // Place axis tick labels
-            rules.append("svg:text")
-              .attr("x", x)
-              .attr("y", h + 15)
-              .attr("dy", ".71em")
-              .attr("text-anchor", "middle");
+            // Add the y-axis.
+            svg.append("svg:g")
+              .attr("class", "y axis")
+              .attr("transform", "translate(" + w + ",0)")
+              .call(yAxis);
 
-            rules.append("svg:text")
-              .data(y.ticks(12))
-              .attr("y", y)
-              .attr("x", -10)
-              .attr("dy", ".35em")
+            // Add the line path.
+            svg.append("svg:path")
+              .attr("class", "line")
+              .attr("clip-path", "url(#clip)")
+              .attr("d", line(values));
+
+            // Add a small label for the name.
+            svg.append("svg:text")
+              .attr("x", w - 6)
+              .attr("y", h - 6)
               .attr("text-anchor", "end")
-              .text(y.tickFormat(5));
-
-            // Series I
-            vis.append("svg:path")
-              .attr("class", "line")
-              .attr("fill", "none")
-              .attr("stroke", "maroon")
-              .attr("stroke-width", 2)
-              .attr("d", d3.svg.line()
-                  .x(function(d) { return x(new Date(d.date)); })
-                  .y(function(d) { return y(d.repos); }));
-
-            vis.selectAll("circle.line")
-              .data(csv_rows)
-              .enter().append("svg:circle")
-              .attr("class", "line")
-              .attr("fill", "maroon" )
-              .attr("cy", function(d) { return y(d.repos); })
-              .attr("r", 1);
+              .text("icco's repos");
         });
       </script>
     </div>
