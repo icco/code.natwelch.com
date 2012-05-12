@@ -9,37 +9,41 @@
     <script src="http://d3js.org/d3.v2.min.js"></script>
     <div id="paired-line-chart">
       <script type="text/javascript">
-        d3.csv("/data.csv", function(data1) {
 
-            /* Read CSV file: first row =>  year,top1,top5  */
-            var maxval = 0, sampsize = 0;
-            var label_array = new Array(), val_array1 = new Array();
+        // The minified js import at the top gives us all of the d3 plugins. FOR FREE!
+        d3.csv("/data.csv", function(csv_rows) {
+
+            // Alright. We have csv_rows with date,repos,forks,watchers
+            // date will always be x, the other three will be y
+            var size = csv_rows.length;
+
+            // This creates a function to pass in a js date.
             var dateFormat = d3.time.format("%Y-%m-%d");
 
-            sampsize = data1.length;
-
-            for (var i=0; i < sampsize; i++) {
-              label_array[i] = dateFormat(new Date(data1[i].date));
-              val_array1[i] = { x: data1[i].date, y: data1[i].forks, z: data1[i].watchers };
-              maxval = Math.max(maxval, data1[i].watchers, data1[i].forks );
+            // We're going to need to know the largest Y value.
+            var maxval = 0;
+            for (var i = 0; i < size; i++) {
+              maxval = Math.max(maxval, csv_rows[i].watchers, csv_rows[i].forks, csv_rows[i].repos);
             }
 
-            maxval = (1 + Math.floor(maxval / 10)) * 10;
+            // Chart dimensions
+            var w = 815;
+            var h = 500;
+            var p = 50; // Padding
 
-            var  w = 815,
-            h = 500,
-            p = 50,
-            x = d3.scale.linear().domain([ val_array1[0].x, val_array1[sampsize-1].x ]).range([0, w]),
-            y = d3.scale.linear().domain([0, maxval]).range([h, 0]);
+            // Scales. Nice functions which auto resize things.
+            // Also defines the ranges for the graph (top and bottom numbers)
+            var x = d3.time.scale().domain([ new Date(csv_rows[0].x), new Date(csv_rows[size-1].x) ]).range([0 + p, w - p]);
+            var y = d3.scale.linear().domain([0, maxval]).range([h, 0]);
 
+            // This defines the actual visualization box.
             var vis = d3.select("#paired-line-chart")
-              .data([val_array1])
+              .data(csv_rows)
               .append("svg:svg")
               .attr("width", w + p * 2)
               .attr("height", h + p * 2)
               .append("svg:g")
               .attr("transform", "translate(" + p + "," + p + ")");
-
 
             var rules = vis.selectAll("g.rule")
               .data(x.ticks(15))
@@ -66,8 +70,7 @@
               .attr("x", x)
               .attr("y", h + 15)
               .attr("dy", ".71em")
-              .attr("text-anchor", "middle")
-              .text(label_array[x]);
+              .attr("text-anchor", "middle");
 
             rules.append("svg:text")
               .data(y.ticks(12))
@@ -84,35 +87,15 @@
               .attr("stroke", "maroon")
               .attr("stroke-width", 2)
               .attr("d", d3.svg.line()
-                  .x(function(d) { return x(d.x); })
-                  .y(function(d) { return y(d.y); }));
+                  .x(function(d) { return x(new Date(d.date)); })
+                  .y(function(d) { return y(d.repos); }));
 
             vis.selectAll("circle.line")
-              .data(val_array1)
+              .data(csv_rows)
               .enter().append("svg:circle")
               .attr("class", "line")
               .attr("fill", "maroon" )
-              .attr("cx", function(d) { return x(d.x); })
-              .attr("cy", function(d) { return y(d.y); })
-              .attr("r", 1);
-
-            // Series II
-            vis.append("svg:path")
-              .attr("class", "line")
-              .attr("fill", "none")
-              .attr("stroke", "darkblue")
-              .attr("stroke-width", 2)
-              .attr("d", d3.svg.line()
-                  .x(function(d) { return x(d.x); })
-                  .y(function(d) { return y(d.z); }));
-
-            vis.selectAll("circle.line")
-              .data(val_array1)
-              .enter().append("svg:circle")
-              .attr("class", "line")
-              .attr("fill", "darkblue" )
-              .attr("cx", function(d) { return x(d.x); })
-              .attr("cy", function(d) { return y(d.z); })
+              .attr("cy", function(d) { return y(d.repos); })
               .attr("r", 1);
         });
       </script>
