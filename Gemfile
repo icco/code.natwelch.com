@@ -12,6 +12,6 @@ gem "sanitize"
 gem "sequel"
 gem "sinatra"
 gem "sqlite3", :groups => [:development]
-gem "taps"
+gem "taps", :git => "git://github.com/icco/taps.git", :require => false
 gem "therubyracer"
 gem "rack", "~> 1.4.1"
