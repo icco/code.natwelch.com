@@ -5,6 +5,11 @@ Bundler.require
 
 require './models'
 
+desc "Run a local server."
+task :local do
+  Kernel.exec("bundle exec shotgun")
+end
+
 desc "Writes current repo counts to db."
 task :cron do
   user_name = "icco"
