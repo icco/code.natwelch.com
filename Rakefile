@@ -7,7 +7,7 @@ require './models'
 
 desc "Run a local server."
 task :local do
-  Kernel.exec("bundle exec shotgun")
+  Kernel.exec("bundle exec shotgun -s thin")
 end
 
 desc "Writes current repo counts to db."
