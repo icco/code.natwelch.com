@@ -5,6 +5,7 @@ gem "json"
 gem "less"
 gem "multi_json"
 gem "octocat_herder"
+gem "octokit"
 gem "pg", :groups => [:production]
 gem "rack", "~> 1.4"
 gem "rack_csrf", :require => "rack/csrf"
