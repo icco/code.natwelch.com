@@ -5,31 +5,62 @@ Bundler.require
 
 require './models'
 
+USER = "icco"
+
 desc "Run a local server."
 task :local do
   Kernel.exec("bundle exec shotgun -s thin")
 end
 
-desc "Writes current repo counts to db."
-task :cron do
-  user_name = "icco"
-  herder = OctocatHerder.new
-  me = herder.user user_name
+desc "Runs all of the tasks that store data."
+task :cron => [ 'cron:repositories', 'cron:commits']
 
-  stat = StatEntry.new
-  stat.user = user_name
-  stat.created_on = Time.now
-  stat.save # save to init default values.
+namespace :cron do
 
-  me.repositories.each do |repo|
-    r = Repo.factory(repo.name, user_name, repo.watchers, repo.forks)
+  desc "Writes current repo statistics to db."
+  task :repositories do
+    user_name = USER
+    herder = OctocatHerder.new
+    me = herder.user user_name
 
-    stat.repos += 1
-    stat.watchers += r.watchers
-    stat.forks += r.forks
+    stat = StatEntry.new
+    stat.user = user_name
+    stat.created_on = Time.now
+    stat.save # save to init default values.
+
+    me.repositories.each do |repo|
+      r = Repo.factory(repo.name, user_name, repo.watchers, repo.forks)
+
+      stat.repos += 1
+      stat.watchers += r.watchers
+      stat.forks += r.forks
+    end
+
+    p stat.save
   end
 
-  p stat.save
+  desc "Writes commit data to db."
+  task :commits do
+    repos = Repo.getRepoNames USER
+
+    repos.each do |repo|
+      commits = Octokit.commits("#{USER}/#{repo}").delete_if do |commit|
+        if commit.is_a? String
+          p commit
+          true
+        else
+          Time.new(commit.commit.author.date).strftime("%D") != Time.now.strftime("%D")
+        end
+      end
+
+      c = CommitCount.new
+      c.created_on = Time.now
+      c.count = commits.count
+      c.repo = repo
+      c.user = USER
+      c.save
+    end
+  end
 end
 
 namespace :db do
