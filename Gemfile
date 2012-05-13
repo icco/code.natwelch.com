@@ -16,4 +16,4 @@ gem "sinatra"
 gem "sqlite3", :groups => [:development]
 gem "taps", :git => "git://github.com/icco/taps.git", :require => false
 gem "therubyracer"
-gem "thin", :groups => [:development]
+gem "thin"
