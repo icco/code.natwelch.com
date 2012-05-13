@@ -45,20 +45,22 @@ namespace :cron do
 
     repos.each do |repo|
       commits = Octokit.commits("#{USER}/#{repo}").delete_if do |commit|
-        if commit.is_a? String
-          p commit
-          true
-        else
-          Time.new(commit.commit.author.date).strftime("%D") != Time.now.strftime("%D")
-        end
+        commit.is_a? String
       end
 
-      c = CommitCount.new
-      c.created_on = Time.now
-      c.count = commits.count
-      c.repo = repo
-      c.user = USER
-      c.save
+      dates = Hash.new(0)
+      commits.each do |commit|
+        dates[Time.new(commit.commit.author.date).strftime("%D")] += 1
+      end
+
+      dates.each_pair do |date,count|
+        c = CommitCount.new
+        c.created_on = Chronic.parse(date)
+        c.count = count
+        c.repo = repo
+        c.user = USER
+        c.save
+      end
     end
   end
 end

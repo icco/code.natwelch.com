@@ -12,6 +12,7 @@ GEM
   remote: http://rubygems.org/
   specs:
     addressable (2.2.8)
+    chronic (0.6.7)
     commonjs (0.2.6)
     daemons (1.1.8)
     eventmachine (0.12.10)
@@ -82,6 +83,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  chronic
   heroku
   json
   less
