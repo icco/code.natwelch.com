@@ -13,7 +13,7 @@ get "/" do
 end
 
 get "/data.csv" do
-  @stats = StatEntry.all
+  @stats = StatEntry.order(:created_on).all
 
   etag "data-#{StatEntry.max(:created_on)}"
   content_type "text/csv"
