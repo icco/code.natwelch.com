@@ -5,6 +5,9 @@ Bundler.require
 
 require './models'
 
+# Adds extended DateTime functionality
+require 'date'
+
 USER = "icco"
 
 desc "Run a local server."
@@ -50,7 +53,7 @@ namespace :cron do
 
       dates = Hash.new(0)
       commits.each do |commit|
-        dates[Time.new(commit.commit.author.date).strftime("%D")] += 1
+        dates[DateTime.iso8601(commit.commit.author.date).strftime("%D")] += 1
       end
 
       dates.each_pair do |date,count|
