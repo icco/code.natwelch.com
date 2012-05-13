@@ -24,16 +24,22 @@
         // Also defines the ranges for the graph (top and bottom numbers)
         var x = d3.time.scale().range([0, w]);
         var y = d3.scale.linear().range([h, 0]);
+        var colors = d3.scale.ordinal().range(["lightgray", "lightpink", "lightblue"]);
+
         var xAxis = d3.svg.axis().scale(x).tickSize(-h).tickSubdivide(true);
         var yAxis = d3.svg.axis().scale(y).ticks(4).orient("right");
 
         // An area generator, for the light fill.
         // TODO(icco): Figure htf this works...
-        var area = d3.svg.area()
-          .interpolate("monotone")
+        var area1 = d3.svg.area()
           .x(function(d) { return x(d.date); })
-          .y0(h)
-          .y1(function(d) { return y(d.repos); });
+          .y0(h).y1(function(d) { return y(d.repos); });
+        var area2 = d3.svg.area()
+          .x(function(d) { return x(d.date); })
+          .y0(h).y1(function(d) { return y(d.watchers); });
+        var area3 = d3.svg.area()
+          .x(function(d) { return x(d.date); })
+          .y0(h).y1(function(d) { return y(d.forks); });
 
         // A line generator, for the dark stroke.
         // TODO(icco): Figure htf this works...
@@ -52,7 +58,6 @@
           .x(function(d) { return x(d.date); })
           .y(function(d) { return y(d.forks); });
 
-
         // The minified js import at the top gives us all of the d3 plugins. FOR FREE!
         d3.csv("/data.csv", function(data) {
 
@@ -66,7 +71,7 @@
               d.date = parse(d.date);
             });
 
-            // Compute the minimum and maximum date, and the maximum price.
+            // Compute the minimum and maximum date, and the maximum y value.
             x.domain([values[0].date, values[values.length - 1].date]);
             y.domain([0, d3.max(values, function(d) { return Math.max(d.forks, d.watchers, d.repos); })]).nice();
 
@@ -84,12 +89,6 @@
               .attr("width", w)
               .attr("height", h);
 
-            // Add the area path.
-            svg.append("svg:path")
-              .attr("class", "area")
-              .attr("clip-path", "url(#clip)")
-              .attr("d", area(values));
-
             // Add the x-axis.
             svg.append("svg:g")
               .attr("class", "x axis")
@@ -101,6 +100,20 @@
               .attr("class", "y axis")
               .attr("transform", "translate(" + w + ",0)")
               .call(yAxis);
+
+            // Add the area path.
+            svg.append("svg:path")
+              .attr("class", "area")
+              .attr("clip-path", "url(#clip)")
+              .attr("d", area1(values));
+            svg.append("svg:path")
+              .attr("class", "area")
+              .attr("clip-path", "url(#clip)")
+              .attr("d", area2(values));
+            svg.append("svg:path")
+              .attr("class", "area")
+              .attr("clip-path", "url(#clip)")
+              .attr("d", area3(values));
 
             // Add the line paths.
             svg.append("svg:path")
