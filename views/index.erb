@@ -9,7 +9,7 @@
   </head>
   <body>
 
-    <div id="paired-line-chart">
+    <div id="chart">
       <script type="text/javascript">
 
         // Date formatter function
@@ -24,56 +24,33 @@
         // Also defines the ranges for the graph (top and bottom numbers)
         var x = d3.time.scale().range([0, w]);
         var y = d3.scale.linear().range([h, 0]);
-        var colors = d3.scale.ordinal().range(["lightgray", "lightpink", "lightblue"]);
+        var colors = d3.scale.ordinal().range([ "lightgray", "lightpink", "lightblue" ]);
 
         var xAxis = d3.svg.axis().scale(x).tickSize(-h).tickSubdivide(true);
         var yAxis = d3.svg.axis().scale(y).ticks(4).orient("right");
 
         // An area generator, for the light fill.
         // TODO(icco): Figure htf this works...
-        var area1 = d3.svg.area()
-          .x(function(d) { return x(d.date); })
-          .y0(h).y1(function(d) { return y(d.repos); });
-        var area2 = d3.svg.area()
-          .x(function(d) { return x(d.date); })
-          .y0(h).y1(function(d) { return y(d.watchers); });
-        var area3 = d3.svg.area()
-          .x(function(d) { return x(d.date); })
-          .y0(h).y1(function(d) { return y(d.forks); });
-
-        // A line generator, for the dark stroke.
-        // TODO(icco): Figure htf this works...
-        var line1 = d3.svg.line()
-          .x(function(d) { return x(d.date); })
-          .y(function(d) { return y(d.repos); });
-
-        var line2 = d3.svg.line()
-          .x(function(d) { return x(d.date); })
-          .y(function(d) { return y(d.watchers); });
-
-        var line3 = d3.svg.line()
-          .x(function(d) { return x(d.date); })
-          .y(function(d) { return y(d.forks); });
+        var area = d3.svg.area()
+          .x(function(d)  { return x(d.x) })
+          .y0(function(d) { return y(d.y0) })
+          .y1(function(d) { return y(d.y0 + d.y) });
 
         // The minified js import at the top gives us all of the d3 plugins. FOR FREE!
         d3.csv("/data.csv", function(data) {
-
-            // In theory we could filter our data here...
-            var values = data.filter(function(d) {
-              return true
-            });
-
-            // Does nice formatting on the data
-            values.forEach(function(d) {
-              d.date = parse(d.date);
-            });
+            var names = ["repos", "forks", "watchers"];
+            var values = d3.layout.stack()(names.map(function(kind) {
+              return data.map(function(d) {
+                return { x: parse(d.date), y: +d[kind] };
+              });
+            }));
 
             // Compute the minimum and maximum date, and the maximum y value.
-            x.domain([values[0].date, values[values.length - 1].date]);
-            y.domain([0, d3.max(values, function(d) { return Math.max(d.forks, d.watchers, d.repos); })]).nice();
+            x.domain([parse(data[0].date), parse(data[data.length - 1].date)]);
+            y.domain([0, d3.max(data, function(d) { return Math.max(d.forks, d.watchers, d.repos); })]).nice();
 
             // Add an SVG element with the desired dimensions and margin.
-            var svg = d3.select("body").append("svg:svg")
+            var svg = d3.select("#chart").append("svg:svg")
               .attr("width", w + m[1] + m[3])
               .attr("height", h + m[0] + m[2])
               .append("svg:g")
@@ -98,33 +75,14 @@
               .attr("transform", "translate(" + w + ",0)")
               .call(yAxis);
 
-            // Add the area path.
-            svg.append("svg:path")
-              .attr("class", "area")
+            svg.selectAll("g.generator")
+              .data(values)
+              .enter().append("svg:path")
+              .attr("class", "generator")
+              .style("fill",   function(d, i) { return colors(i) })
+              .style("stroke", function(d, i) { return d3.rgb(colors(i)).darker()})
               .attr("clip-path", "url(#clip)")
-              .attr("d", area1(values));
-            svg.append("svg:path")
-              .attr("class", "area")
-              .attr("clip-path", "url(#clip)")
-              .attr("d", area2(values));
-            svg.append("svg:path")
-              .attr("class", "area")
-              .attr("clip-path", "url(#clip)")
-              .attr("d", area3(values));
-
-            // Add the line paths.
-            svg.append("svg:path")
-              .attr("class", "line")
-              .attr("clip-path", "url(#clip)")
-              .attr("d", line1(values));
-            svg.append("svg:path")
-              .attr("class", "line")
-              .attr("clip-path", "url(#clip)")
-              .attr("d", line2(values));
-            svg.append("svg:path")
-              .attr("class", "line")
-              .attr("clip-path", "url(#clip)")
-              .attr("d", line3(values));
+              .attr("d", area);
 
             // Add a small label for the name.
             svg.append("svg:text")
