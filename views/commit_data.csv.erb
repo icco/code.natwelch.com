@@ -1,0 +1,4 @@
+date,commits
+<% @stats.each do |entry| %>
+"<%= entry[:date].strftime("%Y-%m-%d %H:%M:%S") %>",<%= entry[:commits] %>
+<% end %>

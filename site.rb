@@ -12,12 +12,20 @@ get "/" do
   erb :index
 end
 
-get "/data.csv" do
+get "/data/repo.csv" do
   @stats = StatEntry.order(:created_on).all
 
-  etag "data-#{StatEntry.max(:created_on)}"
+  etag "data/repo-#{StatEntry.max(:created_on)}"
   content_type "text/csv"
-  erb :"data.csv"
+  erb :"repo_data.csv"
+end
+
+get "/data/commits.csv" do
+  @stats = CommitCount.order(:created_on).all
+
+  etag "data/commit-#{CommitCount.max(:created_on)}"
+  content_type "text/csv"
+  erb :"commit_data.csv"
 end
 
 get "/style.css" do

@@ -58,7 +58,7 @@
           .y(function(d) { return y(d.y); });
 
         // The minified js import at the top gives us all of the d3 plugins. FOR FREE!
-        d3.csv("/data.csv", function(data) {
+        d3.csv("/data/repo.csv", function(data) {
           var values = data.map(function(d) {
             return { x: parse(d.date), y: +d[chart_name] };
           });
