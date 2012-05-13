@@ -10,6 +10,10 @@
   <body>
     <div class="container">
 
+      <div class="title">
+        icco's coding progress
+      </div>
+
       <div class="area-chart" id="forks">
       </div>
       <div class="area-chart" id="repos">
@@ -25,8 +29,8 @@
         var parse = d3.time.format("%Y-%m-%d %H:%M:%S").parse;
 
         // Chart dimensions
-        var m = [20, 40, 20, 40]; // Margins
-        var w = 800 - m[1] - m[3];
+        var m = [20, 80, 20, 80]; // Margins
+        var w = 960 - m[1] - m[3];
         var h = 150 - m[0] - m[2];
 
         // Scales. Nice functions which auto resize things.
