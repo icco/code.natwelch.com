@@ -24,6 +24,7 @@
         // Also defines the ranges for the graph (top and bottom numbers)
         var x = d3.time.scale().range([0, w]);
         var y = d3.scale.linear().range([h, 0]);
+
         var base_color = "#1F78B4";
         var colors = d3.scale.ordinal().range([
           d3.rgb(base_color).brighter(),
@@ -84,13 +85,15 @@
               .attr("transform", "translate(" + w + ",0)")
               .call(yAxis);
 
+            // Draw the lines and areas
             svg.selectAll("g.generator")
               .data(values)
               .enter().append("svg:path")
               .attr("class", "generator")
               .style("fill",   function(d, i) { return d3.rgb(colors(i)) })
               .style("fill-opacity", .5)
-              .style("stroke", function(d, i) { return d3.rgb("#000000").darker() })
+              .style("stroke", function(d, i) { return d3.rgb("#000000").brighter() })
+              .style("stroke-opacity", 1e-6)
               .attr("clip-path", "url(#clip)")
               .attr("d", area);
 
