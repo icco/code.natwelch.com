@@ -44,17 +44,14 @@
         // A line generator, for the dark stroke.
         // TODO(icco): Figure htf this works...
         var line1 = d3.svg.line()
-          .interpolate("monotone")
           .x(function(d) { return x(d.date); })
           .y(function(d) { return y(d.repos); });
 
         var line2 = d3.svg.line()
-          .interpolate("monotone")
           .x(function(d) { return x(d.date); })
           .y(function(d) { return y(d.watchers); });
 
         var line3 = d3.svg.line()
-          .interpolate("monotone")
           .x(function(d) { return x(d.date); })
           .y(function(d) { return y(d.forks); });
 
