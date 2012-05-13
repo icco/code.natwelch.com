@@ -24,7 +24,7 @@
         // Also defines the ranges for the graph (top and bottom numbers)
         var x = d3.time.scale().range([0, w]);
         var y = d3.scale.linear().range([h, 0]);
-        var base_color = "lightblue";
+        var base_color = "#1F78B4";
         var colors = d3.scale.ordinal().range([
           d3.rgb(base_color).brighter(),
           d3.rgb(base_color),
@@ -37,9 +37,10 @@
         // An area generator, for the light fill.
         // TODO(icco): Figure htf this works...
         var area = d3.svg.area()
+          .interpolate("linear")
           .x(function(d)  { return x(d.x) })
-          .y0(function(d) { return y(d.y0) })
-          .y1(function(d) { return y(d.y0 + d.y) });
+          .y0(function(d) { return y(d.y) })
+          .y1(function(d) { return y(0) });
 
         // The minified js import at the top gives us all of the d3 plugins. FOR FREE!
         d3.csv("/data.csv", function(data) {
@@ -50,9 +51,12 @@
               });
             }));
 
+            console.log(values);
+            console.log(data);
+
             // Compute the minimum and maximum date, and the maximum y value.
             x.domain([parse(data[0].date), parse(data[data.length - 1].date)]);
-            y.domain([0, d3.max(data, function(d) { return Math.max(d.forks, d.watchers, d.repos); })*2]).nice();
+            y.domain([0, d3.max(data, function(d) { return Math.max(d.forks, d.watchers, d.repos); })]).nice();
 
             // Add an SVG element with the desired dimensions and margin.
             var svg = d3.select("#chart").append("svg:svg")
@@ -85,7 +89,8 @@
               .enter().append("svg:path")
               .attr("class", "generator")
               .style("fill",   function(d, i) { return d3.rgb(colors(i)) })
-              .style("stroke", function(d, i) { return d3.rgb(colors(i)).darker() })
+              .style("fill-opacity", .5)
+              .style("stroke", function(d, i) { return d3.rgb("#000000").darker() })
               .attr("clip-path", "url(#clip)")
               .attr("d", area);
 
