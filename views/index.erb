@@ -24,7 +24,7 @@
         // Also defines the ranges for the graph (top and bottom numbers)
         var x = d3.time.scale().range([0, w]);
         var y = d3.scale.linear().range([h, 0]);
-        var colors = d3.scale.ordinal().range([ "lightgray", "lightpink", "lightblue" ]);
+        var colors = d3.scale.ordinal().range([ "lightgray", "lightyellow", "lightblue" ]);
 
         var xAxis = d3.svg.axis().scale(x).tickSize(-h).tickSubdivide(true);
         var yAxis = d3.svg.axis().scale(y).ticks(4).orient("right");
