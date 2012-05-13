@@ -54,12 +54,14 @@ namespace :cron do
       end
 
       dates.each_pair do |date,count|
-        c = CommitCount.new
-        c.created_on = Chronic.parse(date)
-        c.count = count
-        c.repo = repo
-        c.user = USER
-        c.save
+        if count
+          c = CommitCount.new
+          c.created_on = Chronic.parse(date)
+          c.count = count
+          c.repo = repo
+          c.user = USER
+          c.save
+        end
       end
     end
   end
