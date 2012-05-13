@@ -24,7 +24,12 @@
         // Also defines the ranges for the graph (top and bottom numbers)
         var x = d3.time.scale().range([0, w]);
         var y = d3.scale.linear().range([h, 0]);
-        var colors = d3.scale.ordinal().range([ "lightgray", "lightyellow", "lightblue" ]);
+        var base_color = "lightblue";
+        var colors = d3.scale.ordinal().range([
+          d3.rgb(base_color).brighter(),
+          d3.rgb(base_color),
+          d3.rgb(base_color).darker(),
+        ]);
 
         var xAxis = d3.svg.axis().scale(x).tickSize(-h).tickSubdivide(true);
         var yAxis = d3.svg.axis().scale(y).ticks(4).orient("right");
@@ -47,7 +52,7 @@
 
             // Compute the minimum and maximum date, and the maximum y value.
             x.domain([parse(data[0].date), parse(data[data.length - 1].date)]);
-            y.domain([0, d3.max(data, function(d) { return Math.max(d.forks, d.watchers, d.repos); })]).nice();
+            y.domain([0, d3.max(data, function(d) { return Math.max(d.forks, d.watchers, d.repos); })*2]).nice();
 
             // Add an SVG element with the desired dimensions and margin.
             var svg = d3.select("#chart").append("svg:svg")
@@ -79,8 +84,8 @@
               .data(values)
               .enter().append("svg:path")
               .attr("class", "generator")
-              .style("fill",   function(d, i) { return colors(i) })
-              .style("stroke", function(d, i) { return d3.rgb(colors(i)).darker()})
+              .style("fill",   function(d, i) { return d3.rgb(colors(i)) })
+              .style("stroke", function(d, i) { return d3.rgb(colors(i)).darker() })
               .attr("clip-path", "url(#clip)")
               .attr("d", area);
 
