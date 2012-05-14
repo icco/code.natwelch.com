@@ -184,18 +184,6 @@
             .attr("transform", "translate(" + w + ",0)")
             .call(yAxis);
 
-          // Draw the lines and areas
-          svg.append("svg:path")
-            .attr("class", "area")
-            .attr("clip-path", "url(#clip)")
-            .style("fill", d3.rgb(color))
-            .attr("d", area(values));
-          svg.append("svg:path")
-            .attr("class", "line")
-            .attr("clip-path", "url(#clip)")
-            .style("stroke", d3.rgb(color))
-            .attr("d", line(values));
-
           // Add a small label for the name.
           svg.append("svg:text")
             .attr("x", w - 6)
