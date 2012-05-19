@@ -45,7 +45,7 @@ GEM
     octocat_herder (0.1.3)
       httparty (~> 0.8.0)
       link_header (~> 0.0.5)
-    octokit (1.0.7)
+    octokit (1.2.0)
       addressable (~> 2.2)
       faraday (~> 0.8)
       faraday_middleware (~> 0.8)

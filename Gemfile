@@ -18,4 +18,4 @@ gem "sinatra"
 gem "sqlite3", :groups => [:development]
 gem "taps", :git => "git://github.com/icco/taps.git", :require => false
 gem "therubyracer"
-gem "thin"
+gem "thin" # can not be dev only because of heroku bug
