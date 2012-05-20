@@ -1,25 +1,54 @@
-DB = Sequel.connect(ENV['DATABASE_URL'] || 'sqlite://db/data.db')
+DB = Sequel.connect(ENV["DATABASE_URL"] || "sqlite://db/data.db")
 
-class Repo < Sequel::Model(:repos)
-  def self.factory name, user, watchers, forks
-    r = Repo.new
-    r.user = user
-    r.repo = name
-    r.watchers = watchers
-    r.forks = forks
-    r.created_on = Time.now
-    r.save
+class Commit < Sequel::Model(:commits)
+  def validate
+    super
 
-    return r
+    validates_presence [ :user, :repo, :sha ]
+    validates_unique   [ :user, :repo, :sha ]
   end
 
-  def self.getRepoNames user
-    return Repo.where(:user => user).to_hash_groups(:repo).keys.sort
+  def self.fetchAllForTime day, month, year, hour
+    require "open-uri"
+    require "zlib"
+    require "yajl"
+
+    # Error checking.
+    return nil if hour < 0 or hour > 23
+    return nil if day < 1 or day > 31
+    return nil if month < 1 or month > 12
+
+    date = "#{"%4d" % year}-#{"%02d" % month}-#{"%02d" % day}-#{hour}"
+    uri = URI.parse "http://data.githubarchive.org/#{date}.json.gz"
+    begin
+      uri.open do |gz|
+        js = Zlib::GzipReader.new(gz).read
+
+        Yajl::Parser.parse(js) do |event|
+          p event if event["actor"] == "icco" and event["type"] == "PushEvent"
+        end
+      end
+    rescue Timeout::Error
+      puts "The request for a page at #{uri} timed out...skipping."
+    rescue OpenURI::HTTPError => e
+      if e.message != "403 Forbidden"
+        puts "The request for a page at #{uri} returned an error. #{e.message}"
+      end
+    end
   end
-end
 
-class StatEntry < Sequel::Model(:entries)
-end
+  def self.factory user, repo, sha
+    c = Commit.new
+    c.user = user
+    c.repo = repo
+    c.sha = sha
 
-class CommitCount < Sequel::Model(:commits)
+    if c.valid?
+      c.save
+      return c
+    else
+      c.errors.full_messages.each {|error| puts "ERROR SAVING COMMIT: #{error}" }
+      return nil
+    end
+  end
 end
