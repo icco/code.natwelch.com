@@ -78,7 +78,7 @@
             .attr("fill", color)
             .attr("x", function(d) { return x(d.x); })
             .attr("y", function(d) { return y(d.y); })
-            .attr("width", w / values.length - barPadding)
+            .attr("width", 1)
             .attr("height", function(d) { return h - y(d.y); });
 
           // Add the clip path.
