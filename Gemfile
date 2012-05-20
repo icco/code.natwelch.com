@@ -5,7 +5,7 @@ gem "heroku"
 gem "json"
 gem "less"
 gem "multi_json"
-gem "octokit"
+gem "octokit", :git => "git://github.com/icco/octokit.git", :branch => "ratelimit"
 gem "pg", :groups => [:production]
 gem "rack", "~> 1.4"
 gem "rack_csrf", :require => "rack/csrf"
