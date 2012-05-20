@@ -69,6 +69,18 @@
             .append("svg:g")
             .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
 
+          // TODO(icco): get this to work.
+          var barPadding = 1;
+          svg.selectAll("rect")
+            .data(values)
+            .enter()
+            .append("rect")
+            .attr("fill", color)
+            .attr("x", function(d) { return x(d.x); })
+            .attr("y", function(d) { return y(d.y); })
+            .attr("width", w / values.length - barPadding)
+            .attr("height", function(d) { return h - y(d.y); });
+
           // Add the clip path.
           svg.append("svg:clipPath")
             .attr("id", "clip")
@@ -87,18 +99,6 @@
             .attr("class", "y axis")
             .attr("transform", "translate(" + w + ",0)")
             .call(yAxis);
-
-          // TODO(icco): get this to work.
-          var barPadding = 1;
-          svg.selectAll("rect")
-            .data(values)
-            .enter()
-            .append("rect")
-            .attr("fill", "teal")
-            .attr("x", function(d) { return x(d.x); })
-            .attr("y", function(d) { return y(d.y); })
-            .attr("width", w / values.length - barPadding)
-            .attr("height", function(d) { return h; });
 
           // Add a small label for the name.
           svg.append("svg:text")
