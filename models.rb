@@ -1,10 +1,12 @@
 DB = Sequel.connect(ENV["DATABASE_URL"] || "sqlite://db/data.db")
 
 class Commit < Sequel::Model(:commits)
+  plugin :validation_helpers
+
   def validate
     super
 
-    validates_presence [ :user, :repo, :sha ]
+    validates_presence [ :user, :repo, :sha, :created_on ]
     validates_unique   [ :user, :repo, :sha ]
   end
 
@@ -25,13 +27,26 @@ class Commit < Sequel::Model(:commits)
         js = Zlib::GzipReader.new(gz).read
 
         Yajl::Parser.parse(js) do |event|
-          p event if event["actor"] == "icco" and event["type"] == "PushEvent"
+          if event["actor"] == "icco" and event["type"] == "PushEvent"
+            puts ""
+
+            # TODO(icco): fix this so we record the user name of the commit
+            # owner, not the repo owner.
+            user = event["repository"]["owner"]
+            repo = event["repository"]["name"]
+            event["payload"]["shas"].each do |commit|
+              sha = commit[0]
+              p self.factory user, repo, sha
+            end
+          end
         end
       end
     rescue Timeout::Error
-      puts "The request for a page at #{uri} timed out...skipping."
+      puts ""
+      puts "The request for #{uri} timed out...skipping."
     rescue OpenURI::HTTPError => e
-      puts "The request for a page at #{uri} returned an error. #{e.message}"
+      puts ""
+      puts "The request for #{uri} returned an error. #{e.message}"
     end
   end
 
@@ -40,6 +55,9 @@ class Commit < Sequel::Model(:commits)
     c.user = user
     c.repo = repo
     c.sha = sha
+
+    gh_commit = Octokit.commit("#{c.user}/#{c.repo}", sha)
+    c.created_on = DateTime.iso8601(gh_commit.commit.author.date)
 
     if c.valid?
       c.save
