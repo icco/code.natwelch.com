@@ -1,4 +1,7 @@
+
 DB = Sequel.connect(ENV["DATABASE_URL"] || "sqlite://db/data.db")
+
+USER = "icco"
 
 class Commit < Sequel::Model(:commits)
   plugin :validation_helpers
@@ -27,7 +30,7 @@ class Commit < Sequel::Model(:commits)
         js = Zlib::GzipReader.new(gz).read
 
         Yajl::Parser.parse(js) do |event|
-          if event["actor"] == "icco" and event["type"] == "PushEvent"
+          if event["actor"] == USER and event["type"] == "PushEvent"
             puts ""
 
             # TODO(icco): fix this so we record the user name of the commit

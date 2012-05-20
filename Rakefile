@@ -8,8 +8,6 @@ require "./models"
 # Adds extended DateTime functionality
 require "date"
 
-USER = "icco"
-
 desc "Run a local server."
 task :local do
   Kernel.exec("bundle exec shotgun -s thin")
@@ -38,7 +36,6 @@ namespace :cron do
 
   desc "Loops through every hour this year, and puts it all into the db."
   task :rebuild do
-
     # githubarchive started 3/11/2012
     start = Chronic.parse "March 11, 2012"
     finish = Time.now
@@ -50,6 +47,20 @@ namespace :cron do
       print "."
       Commit.fetchAllForTime time.day, time.month, time.year, time.hour
     end while (time += 3600) < finish
+  end
+
+  desc "gets the 30 most recent commits from every public repo of USER."
+  task :get_older_commits do
+
+    # Now, because we will probably want some data from before when github
+    # archive started, lets pound github's api and get some older commits.
+    Octokit.repos(USER).each do |repo|
+      puts "#{USER}/#{repo["name"]}"
+      commits = Octokit.commits("#{USER}/#{repo["name"]}").delete_if {|commit| commit.is_a? String }
+      commits.each do |commit|
+        p Commit.factory USER, repo['name'], commit['sha']
+      end
+    end
   end
 end
 
