@@ -66,6 +66,9 @@ end
 
 namespace :db do
 
+  desc "Erase and Rebuild the Database."
+  task :rebuild => [ 'db:erase', 'cron:rebuild', 'cron:get_older_commits' ]
+
   desc "Bring database schema up to par."
   task :migrate do
     db_url = ENV["DATABASE_URL"] || "sqlite://db/data.db"
