@@ -13,7 +13,7 @@ get "/" do
 end
 
 get "/data/commit.csv" do
-  data = Commit.group_and_count(:created_on)
+  data = Commit.group_and_count(:created_on).order(:created_on)
 
   @stats = Hash.new(0)
   data.each do |row|
