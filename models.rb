@@ -31,9 +31,7 @@ class Commit < Sequel::Model(:commits)
     rescue Timeout::Error
       puts "The request for a page at #{uri} timed out...skipping."
     rescue OpenURI::HTTPError => e
-      if e.message != "403 Forbidden"
-        puts "The request for a page at #{uri} returned an error. #{e.message}"
-      end
+      puts "The request for a page at #{uri} returned an error. #{e.message}"
     end
   end
 
