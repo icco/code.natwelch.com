@@ -13,7 +13,7 @@ class Commit < Sequel::Model(:commits)
     require "zlib"
     require "yajl"
 
-    # Error checking.
+    # Simple error checking.
     return nil if hour < 0 or hour > 23
     return nil if day < 1 or day > 31
     return nil if month < 1 or month > 12
