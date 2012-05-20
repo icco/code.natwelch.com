@@ -30,7 +30,9 @@ namespace :cron do
     hours = 0..23
 
     hours.each do |hour|
+      print hour
       Commit.fetchAllForTime day, month, year, hour
+      print "."
     end
   end
 
