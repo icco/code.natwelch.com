@@ -67,7 +67,7 @@ namespace :cron do
     client = Octokit::Client.new({:auto_traversal => true})
     client.repos(USER).each do |repo|
       puts "#{USER}/#{repo["name"]}"
-      commits = client.commits("#{USER}/#{repo["name"]}")
+      commits = client.commits("#{USER}/#{repo["name"]}").delete_if {|commit| commit.is_a? String }
       commits.each do |commit|
         p Commit.factory USER, repo['name'], commit['sha']
       end
