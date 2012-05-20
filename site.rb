@@ -12,24 +12,15 @@ get "/" do
   erb :index
 end
 
-get "/data/repo.csv" do
-  @stats = StatEntry.order(:created_on).all
-
-  etag "data/repo-#{StatEntry.max(:created_on)}"
-  content_type "text/csv"
-  erb :"repo_data.csv"
-end
-
 get "/data/commit.csv" do
-  data = CommitCount.order(:created_on).all
+  data = Commit.group_and_count(:created_on)
 
-  @stats = Hash.new()
-  data.each do |entry|
-    @stats[entry.created_on.strftime("%D")] = Hash.new(0) if @stats[entry.created_on.strftime("%D")].nil?
-    @stats[entry.created_on.strftime("%D")][entry.repo] = entry.count
+  @stats = Hash.new(0)
+  data.each do |row|
+    @stats[row.values[:created_on].strftime("%D")] += row.values[:count]
   end
 
-  etag "data/commit-#{CommitCount.max(:created_on)}"
+  etag "data/commit-#{Commit.max(:created_on)}"
   content_type "text/csv"
   erb :"commit_data.csv"
 end
