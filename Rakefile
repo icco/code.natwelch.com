@@ -16,7 +16,7 @@ task :local do
 end
 
 desc "Runs all of the tasks that store data."
-task :cron => [ "cron:repositories", "cron:commits"]
+task :cron => [ "cron:hourly" ]
 
 namespace :cron do
 
