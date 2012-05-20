@@ -49,14 +49,24 @@ namespace :cron do
     end while (time += 3600) < finish
   end
 
-  desc "gets the 30 most recent commits from every public repo of USER."
+  desc "gets all of the commits from every public repo of USER."
   task :get_older_commits do
+
+    # For testing forked repos.
+    # commits = Octokit.commits("icco/downforeveryoneorjustme").delete_if {|commit| commit.is_a? String }
+    # commits.each do |commit|
+    #   p Commit.factory "icco", "downforeveryoneorjustme", commit['sha']
+    # end
 
     # Now, because we will probably want some data from before when github
     # archive started, lets pound github's api and get some older commits.
-    Octokit.repos(USER).each do |repo|
+    #
+    # NOTE: If you have a lot of repos or lots of commits, you could blow out
+    # your request quota from github. Remove the auto_traveral from the commits
+    # call if this is the case.
+    Octokit.repos(USER, {:auto_traversal => true}).each do |repo|
       puts "#{USER}/#{repo["name"]}"
-      commits = Octokit.commits("#{USER}/#{repo["name"]}").delete_if {|commit| commit.is_a? String }
+      commits = Octokit.commits("#{USER}/#{repo["name"]}", {:auto_traversal => true}).delete_if {|commit| commit.is_a? String }
       commits.each do |commit|
         p Commit.factory USER, repo['name'], commit['sha']
       end
