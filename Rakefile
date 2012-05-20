@@ -36,14 +36,18 @@ namespace :cron do
 
   desc "Loops through every hour this year, and puts it all into the db."
   task :rebuild do
-    year = 2012
-    (1..12).each do |month|
-      (0..31).each do |day|
-        (0..23).each do |hour|
-          Commit.fetchAllForTime day, month, year, hour
-        end
-      end
-    end
+
+    # githubarchive started 3/11/2012
+    start = Chronic.parse "March 11, 2012"
+    finish = Time.now
+
+    # We can't iterate over time in Ruby (Time#succ is crazy expensive), so
+    # instead we use a do-while loop.
+    time = start
+    begin
+      print "."
+      Commit.fetchAllForTime time.day, time.month, time.year, time.hour
+    end while (time += 3600) < finish
   end
 end
 
