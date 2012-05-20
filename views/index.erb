@@ -89,14 +89,16 @@
             .call(yAxis);
 
           // TODO(icco): get this to work.
-          svg.append("svg:rect")
+          var barPadding = 1;
+          svg.selectAll("rect")
+            .data(values)
+            .enter()
+            .append("rect")
+            .attr("fill", "teal")
             .attr("x", function(d) { return x(d.x); })
             .attr("y", function(d) { return y(d.y); })
-            .attr("width", x1.rangeBand())
-            .attr("height", function(d) { return h - y(d.y); })
-            .style("fill", color(color))
-            .style("fill-opacity", 1e-6)
-            .attr("d", values);
+            .attr("width", w / values.length - barPadding)
+            .attr("height", function(d) { return h; });
 
           // Add a small label for the name.
           svg.append("svg:text")
