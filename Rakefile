@@ -64,9 +64,10 @@ namespace :cron do
     # NOTE: If you have a lot of repos or lots of commits, you could blow out
     # your request quota from github. Remove the auto_traveral from the commits
     # call if this is the case.
-    Octokit.repos(USER, {:auto_traversal => true}).each do |repo|
+    client = Octokit::Client.new({:auto_traversal => true})
+    client.repos(USER).each do |repo|
       puts "#{USER}/#{repo["name"]}"
-      commits = Octokit.commits("#{USER}/#{repo["name"]}", {:auto_traversal => true}).delete_if {|commit| commit.is_a? String }
+      commits = client.commits("#{USER}/#{repo["name"]}")
       commits.each do |commit|
         p Commit.factory USER, repo['name'], commit['sha']
       end
