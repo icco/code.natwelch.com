@@ -1,4 +1,0 @@
-date,repos,forks,watchers
-<% @stats.each do |entry| %>
-"<%= entry.created_on.strftime("%Y-%m-%d %H:%M:%S") %>",<%= entry.repos %>,<%= entry.forks %>,<%= entry.watchers %>
-<% end %>

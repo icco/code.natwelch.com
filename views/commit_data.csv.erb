@@ -1,4 +1,4 @@
 date,commits
 <% @stats.each_pair do |date,entry| %>
-"<%= Chronic.parse(date).strftime("%Y-%m-%d %H:%M:%S") %>",<%= entry %>
+"<%= date %>",<%= entry %>
 <% end %>
