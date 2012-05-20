@@ -16,6 +16,11 @@ end
 desc "Runs all of the tasks that store data."
 task :cron => [ "cron:hourly" ]
 
+task :stats do
+  puts "Commits by #{USER}:\t#{Commit.filter(:user => USER).count}"
+  puts "Github Ratelimit:\t#{Octokit.ratelimit_remaining}/#{Octokit.ratelimit}"
+end
+
 namespace :cron do
 
   desc "Goes through the events of yesterday and puts them in the db."
