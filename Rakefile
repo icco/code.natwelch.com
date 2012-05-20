@@ -83,9 +83,6 @@ namespace :db do
   task :dump do
     DB = Sequel.connect(ENV["DATABASE_URL"] || "sqlite://db/data.db")
 
-    puts "Sites Schema"
-    p DB.schema :sites
-
     puts "Commits Schema"
     p DB.schema :commits
   end
