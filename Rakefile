@@ -85,7 +85,7 @@ namespace :db do
     db_url = ENV["DATABASE_URL"] || "sqlite://db/data.db"
     migrations_dir = "./db/migrations/"
 
-    puts "Migrating from "#{migrations_dir}" into "#{db_url}"."
+    puts "Migrating from '#{migrations_dir}' into '#{db_url}'."
 
     ret = Kernel.system("sequel -m #{migrations_dir} #{db_url}");
 
@@ -100,7 +100,7 @@ namespace :db do
 
   desc "Delete the database"
   task :erase do
-    p DB[:commits].delete
+    puts "Deleted: #{DB[:commits].delete} rows."
   end
 
   desc "Dumps the database"
