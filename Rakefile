@@ -75,14 +75,11 @@ namespace :db do
 
   desc "Delete the database"
   task :erase do
-    DB = Sequel.connect(ENV["DATABASE_URL"] || "sqlite://db/data.db")
-    DB.drop_table(:commits)
+    p DB[:commits].delete
   end
 
   desc "Dumps the database"
   task :dump do
-    DB = Sequel.connect(ENV["DATABASE_URL"] || "sqlite://db/data.db")
-
     puts "Commits Schema"
     p DB.schema :commits
   end
