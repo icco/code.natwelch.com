@@ -55,11 +55,20 @@ class Commit < Sequel::Model(:commits)
 
   def self.factory user, repo, sha
     c = Commit.new
-    c.user = user
+    gh_commit = Octokit.commit("#{user}/#{repo}", sha)
+
+    # This is to prevent counting repos I just forked and didn't do any work
+    # in. A few commits will still slip through thought that don't belong to
+    # me. I don't know why.
+    if gh_commit.author and gh_commit.author.login
+      c.user = gh_commit.author.login
+    else
+      c.user = user
+    end
+
     c.repo = repo
     c.sha = sha
 
-    gh_commit = Octokit.commit("#{c.user}/#{c.repo}", sha)
     c.created_on = DateTime.iso8601(gh_commit.commit.author.date)
 
     if c.valid?
