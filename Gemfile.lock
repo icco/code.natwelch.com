@@ -10,9 +10,9 @@ GIT
 
 GIT
   remote: git://github.com/pengwynn/octokit.git
-  revision: 10430ec98ccc8067f69315d561f740a396e49781
+  revision: cb7da86728f1c0c7b89fae57ab863afcb86c4c73
   specs:
-    octokit (1.2.1)
+    octokit (1.3.0)
       addressable (~> 2.2)
       faraday (~> 0.8)
       faraday_middleware (~> 0.8)
@@ -33,7 +33,7 @@ GEM
     faraday_middleware (0.8.7)
       faraday (>= 0.7.4, < 0.9)
     hashie (1.2.0)
-    heroku (2.26.1)
+    heroku (2.26.2)
       heroku-api (~> 0.2.1)
       launchy (>= 0.3.2)
       netrc (~> 0.7.2)
