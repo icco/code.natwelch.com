@@ -55,6 +55,10 @@ class Commit < Sequel::Model(:commits)
 
   def self.factory user, repo, sha
     c = Commit.new
+
+    # Sleep until we have the ratelimit to do this.
+    sleep(1) until Octokit.ratelimit > 2
+
     gh_commit = Octokit.commit("#{user}/#{repo}", sha)
 
     # This is to prevent counting repos I just forked and didn't do any work
