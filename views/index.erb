@@ -25,14 +25,16 @@
       </div>
     </div>
 
-    <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+    <script src="http://code.jquery.com/jquery.min.js"></script>
     <script src="/js/bootstrap.js"></script>
     <script src="http://d3js.org/d3.v2.js"></script>
     <script src="/js/graph.js"></script>
     <script src="/js/repos.js"></script>
     <script type="text/javascript">
-      drawCommitChart("#3d68b8");
-      drawRepos();
+      $(document).ready(function() {
+        drawCommitChart("#3d68b8");
+        drawRepos();
+      });
     </script>
   </body>
 </html>
