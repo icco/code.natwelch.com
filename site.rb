@@ -1,5 +1,3 @@
-#!/usr/bin/env ruby
-#
 # @author Nat Welch - https://github.com/icco
 
 require "./models"

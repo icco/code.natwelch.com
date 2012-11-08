@@ -1,5 +1,6 @@
+# Models
 
-DB = Sequel.connect(ENV["DATABASE_URL"] || "sqlite://db/data.db")
+DB = Sequel.connect(ENV["DATABASE_URL"] || "postgres://localhost/code_stats")
 
 USER = "icco"
 
