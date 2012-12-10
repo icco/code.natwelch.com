@@ -4,6 +4,7 @@ gem "chronic"
 gem "heroku"
 gem "json"
 gem "less"
+gem "libv8"
 gem "multi_json"
 gem "octokit", :git => "git://github.com/pengwynn/octokit.git"
 gem "pg", :groups => [:production]
