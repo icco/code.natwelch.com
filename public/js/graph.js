@@ -1,7 +1,7 @@
 function drawCommitChart(color) {
 
   // Date formatter function
-  var parse = d3.time.format("%m/%d/%Y").parse;
+  var parse = d3.time.format("%m/%d/%y").parse;
 
   // Chart dimensions
   var m = [20, 80, 20, 80]; // Margins
