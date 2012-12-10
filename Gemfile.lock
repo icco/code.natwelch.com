@@ -17,30 +17,17 @@ GEM
     commonjs (0.2.6)
     daemons (1.1.9)
     eventmachine (1.0.0)
-    excon (0.16.10)
     faraday (0.8.4)
       multipart-post (~> 1.1)
     faraday_middleware (0.9.0)
       faraday (>= 0.7.4, < 0.9)
     hashie (1.2.0)
-    heroku (2.33.3)
-      heroku-api (~> 0.3.7)
-      launchy (>= 0.3.2)
-      netrc (~> 0.7.7)
-      rest-client (~> 1.6.1)
-      rubyzip
-    heroku-api (0.3.7)
-      excon (~> 0.16.10)
     json (1.7.5)
-    launchy (2.1.2)
-      addressable (~> 2.3)
     less (2.2.2)
       commonjs (~> 0.2.6)
     libv8 (3.11.8.4)
-    mime-types (1.19)
     multi_json (1.4.0)
     multipart-post (1.1.5)
-    netrc (0.7.7)
     nokogiri (1.5.5)
     pg (0.14.1)
     rack (1.4.1)
@@ -50,9 +37,6 @@ GEM
       rack (>= 0.9)
     rake (10.0.2)
     ref (1.0.2)
-    rest-client (1.6.7)
-      mime-types (>= 1.16)
-    rubyzip (0.9.9)
     sanitize (2.0.3)
       nokogiri (>= 1.4.4, < 1.6)
     sequel (3.42.0)
@@ -76,7 +60,6 @@ PLATFORMS
 
 DEPENDENCIES
   chronic
-  heroku
   json
   less
   libv8

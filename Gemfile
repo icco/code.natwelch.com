@@ -1,7 +1,6 @@
 source :rubygems
 
 gem "chronic"
-gem "heroku"
 gem "json"
 gem "less"
 gem "libv8"
