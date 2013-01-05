@@ -1,17 +1,15 @@
-Sequel.migration do
-  change do
+class Restart < ActiveRecord::Migration
+  def change
     # This essentially defeats the purpose of having a migration.
-    drop_table(:commits)
-    drop_table(:entries)
-    drop_table(:repos)
+    drop_table :commits
+    drop_table :entries
+    drop_table :repos
 
-    create_table :commits do
-      primary_key :id
-      String :repo
-      String :user
-      String :sha
-
-      DateTime :created_on
+    create_table :commits do |t|
+      t.string :repo
+      t.string :user
+      t.string :sha
+      t.timestamps
     end
   end
 end
