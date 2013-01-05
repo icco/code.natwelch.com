@@ -9,7 +9,7 @@ class Restart < ActiveRecord::Migration
       t.string :repo
       t.string :user
       t.string :sha
-      t.timestamps
+      t.datetime "created_on"
     end
   end
 end
