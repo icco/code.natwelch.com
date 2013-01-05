@@ -101,7 +101,7 @@ function drawWeeklyChart(color, year, element) {
   var y = d3.scale.linear().range([h, 0]);
 
   var xAxis = d3.svg.axis().scale(x).orient("bottom");
-  var yAxis = d3.svg.axis().scale(y).orient("right");
+  var yAxis = d3.svg.axis().scale(y).ticks(5).orient("right");
 
   var line = d3.svg.line()
     .x(function(d) { return x(d.x); })
