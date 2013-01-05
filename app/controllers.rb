@@ -18,11 +18,16 @@ Code.controllers  do
   end
 
   get "/data/weekly.csv" do
+    year = params["year"] || '2010'
+
     data = Commit.order(:created_on).where(:user => Commit::USER).count(:group=>:created_on)
 
     @stats = Hash.new(0)
+    ("01".."52").each {|week| @stats[week] = 0 }
     data.each do |row|
-      @stats[row[0].strftime("%Y,%U")] += row[1]
+      if row[0].strftime("%Y") == '2012'
+        @stats[row[0].strftime("%U")] += row[1]
+      end
     end
 
     etag "data/weekly-#{Commit.maximum(:created_on)}"
