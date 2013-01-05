@@ -1,12 +1,8 @@
 class Commit <  ActiveRecord::Base
-  plugin :validation_helpers
-
-  def validate
-    super
-
-    validates_presence [ :user, :repo, :sha, :created_on ]
-    validates_unique   [ :user, :repo, :sha ]
-  end
+  validates :user, :presence => true
+  validates :repo, :presence => true
+  validates :sha, :presence => true
+  validates [ :user, :repo, :sha ], :uniqueness => true
 
   def self.fetchAllForTime day, month, year, hour
     require "open-uri"
@@ -74,7 +70,7 @@ class Commit <  ActiveRecord::Base
       c.save
       return c
     else
-      c.errors.full_messages.each {|error| puts "ERROR SAVING COMMIT: #{error}" }
+      c.errors.each {|error| puts "ERROR SAVING COMMIT: #{error}" }
       return nil
     end
   end
