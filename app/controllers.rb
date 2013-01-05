@@ -1,10 +1,13 @@
 Code.controllers  do
+  ONE_HOUR = 60*60
 
-  get :index do
+  get :index, :cache => true do
     render :index
   end
 
-  get "/data/commit.csv" do
+  get "/data/commit.csv", :cache => true do
+    expires_in ONE_HOUR
+
     data = Commit.order(:created_on).where(:user => Commit::USER).count(:group=>:created_on)
 
     @stats = Hash.new(0)
@@ -17,7 +20,9 @@ Code.controllers  do
     erb :"commit_data.csv"
   end
 
-  get "/data/:year/weekly.csv" do
+  get "/data/:year/weekly.csv", :cache => true do
+    expires_in ONE_HOUR
+
     @year = params[:year] || Time.now.year.to_s
     logger.info "Getting data for #{@year}."
 
@@ -37,7 +42,7 @@ Code.controllers  do
     render :"weekly_data.csv"
   end
 
-  get "/style.css" do
+  get "/style.css", :cache => true do
     content_type "text/css", :charset => "utf-8"
     less :style
   end
