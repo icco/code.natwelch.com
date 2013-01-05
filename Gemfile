@@ -1,18 +1,29 @@
 source :rubygems
 
-gem "chronic"
-gem "json"
-gem "less"
-gem "multi_json"
-gem "octokit", :git => "git://github.com/pengwynn/octokit.git"
-gem "pg", :groups => [:production]
-gem "rack", "~> 1.4"
-gem "rack_csrf", :require => "rack/csrf"
-gem "rake"
-gem "sanitize"
-gem "sequel"
-gem "shotgun", :groups => [:development], :require => false
-gem "sinatra"
-gem "therubyracer"
-gem "thin" # can not be dev only because of heroku bug
-gem "yajl-ruby", :require => "yajl"
+# Project requirements
+gem 'activerecord', :require => 'active_record'
+gem 'chronic'
+gem 'erubis', '~> 2.7.0'
+gem 'json'
+gem 'less'
+gem 'multi_json'
+gem 'octokit', :git => 'git://github.com/pengwynn/octokit.git'
+gem 'pg'
+gem 'rack', '~> 1.4'
+gem 'rack-less'
+gem 'rack_csrf', :require => 'rack/csrf'
+gem 'rake'
+gem 'sanitize'
+gem 'sinatra'
+gem 'sinatra-flash', :require => 'sinatra/flash'
+gem 'therubyracer'
+gem 'thin'
+gem 'yajl-ruby', :require => 'yajl'
+
+# Padrino Stable Gem
+gem 'padrino', '0.10.6'
+
+# For dev
+group :development do
+  gem 'shotgun'
+end

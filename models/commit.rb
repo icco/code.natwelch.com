@@ -1,18 +1,9 @@
-# Models
-
-DB = Sequel.connect(ENV["DATABASE_URL"] || "postgres://localhost/code_stats")
-
 USER = "icco"
 
-class Commit < Sequel::Model(:commits)
-  plugin :validation_helpers
-
-  def validate
-    super
-
-    validates_presence [ :user, :repo, :sha, :created_on ]
-    validates_unique   [ :user, :repo, :sha ]
-  end
+class Commit <  ActiveRecord::Base
+  validates :user, :presence => true
+  validates :repo, :presence => true
+  validates :sha, :presence => true, :uniqueness => {:scope => [:user,:repo]}
 
   def self.fetchAllForTime day, month, year, hour
     require "open-uri"
@@ -80,7 +71,7 @@ class Commit < Sequel::Model(:commits)
       c.save
       return c
     else
-      c.errors.full_messages.each {|error| puts "ERROR SAVING COMMIT: #{error}" }
+      c.errors.each {|error| puts "ERROR SAVING COMMIT: #{error}" }
       return nil
     end
   end
