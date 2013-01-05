@@ -1,12 +1,15 @@
-require "rubygems"
-require "bundler"
-
-Bundler.require
-
-require "./models"
+require File.expand_path('../config/boot.rb', __FILE__)
+require 'padrino-core/cli/rake'
 
 # Adds extended DateTime functionality
 require "date"
+
+PadrinoTasks.init
+
+desc "Run a local server."
+task :local do
+  Kernel.exec("shotgun -s thin -p 9393")
+end
 
 desc "Run a local server."
 task :local do
@@ -85,32 +88,4 @@ namespace :db do
   desc "Erase and Rebuild the Database."
   task :rebuild => [ 'db:erase', 'cron:rebuild', 'cron:get_older_commits' ]
 
-  desc "Bring database schema up to par."
-  task :migrate do
-    db_url = ENV["DATABASE_URL"] || "sqlite://db/data.db"
-    migrations_dir = "./db/migrations/"
-
-    puts "Migrating from '#{migrations_dir}' into '#{db_url}'."
-
-    ret = Kernel.system("sequel -m #{migrations_dir} #{db_url}");
-
-    if ret
-      puts "Database migrated."
-    else
-      puts "Database migration failed."
-    end
-
-    puts "Database built."
-  end
-
-  desc "Delete the database"
-  task :erase do
-    puts "Deleted: #{DB[:commits].delete} rows."
-  end
-
-  desc "Dumps the database"
-  task :dump do
-    puts "Commits Schema"
-    p DB.schema :commits
-  end
 end
