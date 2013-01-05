@@ -85,7 +85,7 @@ function drawCommitChart(color) {
   });
 }
 
-function drawWeeklyChart(color) {
+function drawWeeklyChart(color, year, element) {
 
   // Date formatter function
   var parse = d3.time.format("%Y/%U").parse;
@@ -116,19 +116,19 @@ function drawWeeklyChart(color) {
     .y(function(d) { return y(d.y); });
 
   // The minified js import at the top gives us all of the d3 plugins. FOR FREE!
-  d3.csv("/data/weekly.csv", function(data) {
+  d3.csv("/data/weekly.csv?year="+year, function(data) {
     var values = data.map(function(d) {
-      return { x: parse(d.year+ "/" + d.week), y: +d.commits };
+      return { x: parse(year+ "/" + d.week), y: +d.commits };
     });
 
     // Compute the minimum and maximum date, and the maximum y value.
-    var first = data[0].year + "/" + data[0].week;
-    var last  = data[data.length - 1].year + "/" + data[data.length - 1].week;
+    var first = year + "/" + data[0].week;
+    var last  = year + "/" + data[data.length - 1].week;
     x.domain([parse(first), parse(last)]);
     y.domain([0, d3.max(values, function(d) { return d.y; })]).nice();
 
     // Add an SVG element with the desired dimensions and margin.
-    var svg = d3.select("#commits").append("svg:svg")
+    var svg = d3.select(element).append("svg:svg")
       .attr("width", w + m[1] + m[3])
       .attr("height", h + m[0] + m[2])
       .append("svg:g")
@@ -170,6 +170,6 @@ function drawWeeklyChart(color) {
       .attr("x", w - 6)
       .attr("y", m[0] - 12)
       .attr("text-anchor", "end")
-      .text("github.com/icco : commits/week");
+      .text("github.com/icco : commits/week for " + year);
   });
 }

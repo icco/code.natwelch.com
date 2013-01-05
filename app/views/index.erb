@@ -24,7 +24,7 @@
       <p>
       Hey there, above is a chart of commits per day made by <a href="http://natwelch.com">Nat</a> to repositories on Github. Below are his repositories organized by topic.
       </p>
-      -->
+    -->
 
       <div>
       </div>
@@ -42,7 +42,9 @@
     <script type="text/javascript">
       $(document).ready(function() {
         drawCommitChart("#3d68b8");
-        // drawWeeklyChart("#3d68b8");
+
+        $('.year-chart').each(function(i, el) { drawWeeklyChart("#3d68b8", $(el).attr('data'), el); });
+
         // drawRepos();
       });
     </script>
