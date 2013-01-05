@@ -107,7 +107,7 @@ function drawWeeklyChart(color, year, element) {
     .x(function(d) { return x(d.x); })
     .y(function(d) { return y(d.y); });
 
-  d3.csv("/data/weekly.csv?year="+year, function(data) {
+  d3.csv("/data/"+year+"/weekly.csv", function(data) {
     console.log(data);
 
     var values = data.map(function(d) {

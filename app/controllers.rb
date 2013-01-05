@@ -17,16 +17,18 @@ Code.controllers  do
     erb :"commit_data.csv"
   end
 
-  get "/data/weekly.csv" do
-    @year = params["year"] || Time.now.year.to_s
+  get "/data/:year/weekly.csv" do
+    @year = params[:year] || Time.now.year.to_s
+    logger.info "Getting data for #{@year}."
 
     data = Commit.order(:created_on).where(:user => Commit::USER).count(:group=>:created_on)
 
-    @stats = Hash.new(0)
+    @stats = {}
     ("01".."52").each {|week| @stats[week] = 0 }
     data.each do |row|
-      if row[0].strftime("%Y") == '2012'
-        @stats[row[0].strftime("%U")] += row[1]
+      if row[0].strftime("%Y") == @year
+        week = row[0].strftime("%U")
+        @stats[week] += row[1] if week != "00"
       end
     end
 
@@ -39,5 +41,4 @@ Code.controllers  do
     content_type "text/css", :charset => "utf-8"
     less :style
   end
-
 end
