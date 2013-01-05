@@ -18,7 +18,7 @@ Code.controllers  do
   end
 
   get "/data/weekly.csv" do
-    year = params["year"] || Time.now.year.to_s
+    @year = params["year"] || Time.now.year.to_s
 
     data = Commit.order(:created_on).where(:user => Commit::USER).count(:group=>:created_on)
 
@@ -30,9 +30,9 @@ Code.controllers  do
       end
     end
 
-    etag "data/weekly-#{Commit.maximum(:created_on)}"
+    etag "data/weekly-#{@year}-#{Commit.maximum(:created_on)}"
     content_type "text/csv"
-    erb :"weekly_data.csv"
+    render :"weekly_data.csv"
   end
 
   get "/style.css" do

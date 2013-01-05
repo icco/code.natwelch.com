@@ -6,6 +6,25 @@
     <link href="/css/bootstrap.css" media="screen" rel="stylesheet" type="text/css" />
     <link href="/css/bootstrap-responsive.css" media="screen" rel="stylesheet" type="text/css" />
     <link href="/style.css" media="screen" rel="stylesheet" type="text/css" />
+
+    <style>
+      .year-chart .axis path,
+      .year-chart .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+      }
+
+      .year-chart .x.axis path {
+        display: none;
+      }
+
+      .year-chart .line {
+        fill: none;
+        stroke: steelblue;
+        stroke-width: 1.5px;
+      }
+    </style>
   </head>
   <body>
     <div class="container">
@@ -18,6 +37,15 @@
       </div>
 
       <div class="year-chart" data="2012">
+      </div>
+
+      <div class="year-chart" data="2011">
+      </div>
+
+      <div class="year-chart" data="2010">
+      </div>
+
+      <div class="year-chart" data="2009">
       </div>
 
       <!--
@@ -33,7 +61,7 @@
     <script src="http://code.jquery.com/jquery.min.js"></script>
     <script src="http://underscorejs.org/underscore-min.js"></script>
     <script src="/js/bootstrap.js"></script>
-    <script src="http://d3js.org/d3.v2.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="/js/graph.js"></script>
     <!--
     <script src="https://raw.github.com/k33g/gh3/master/gh3.js"></script>
