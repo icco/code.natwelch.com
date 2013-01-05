@@ -5,27 +5,27 @@ Code.controllers  do
   end
 
   get "/data/commit.csv" do
-    data = Commit.filter(:user => USER).group_and_count(:created_on).order(:created_on)
+    data = Commit.order(:created_on).where(:user => Commit::USER).count(:group=>:created_on)
 
     @stats = Hash.new(0)
     data.each do |row|
-      @stats[row.values[:created_on].strftime("%D")] += row.values[:count]
+      @stats[row[0].strftime("%D")] += row[1]
     end
 
-    etag "data/commit-#{Commit.max(:created_on)}"
+    etag "data/commit-#{Commit.maximum(:created_on)}"
     content_type "text/csv"
     erb :"commit_data.csv"
   end
 
   get "/data/weekly.csv" do
-    data = Commit.filter(:user => USER).group_and_count(:created_on).order(:created_on)
+    data = Commit.order(:created_on).where(:user => Commit::USER).count(:group=>:created_on)
 
     @stats = Hash.new(0)
     data.each do |row|
-      @stats[row.values[:created_on].strftime("%Y,%U")] += row.values[:count]
+      @stats[row[0].strftime("%Y,%U")] += row[1]
     end
 
-    etag "data/weekly-#{Commit.max(:created_on)}"
+    etag "data/weekly-#{Commit.maximum(:created_on)}"
     content_type "text/csv"
     erb :"weekly_data.csv"
   end

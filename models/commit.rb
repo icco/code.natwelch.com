@@ -1,6 +1,6 @@
-USER = "icco"
-
 class Commit <  ActiveRecord::Base
+  USER = "icco"
+
   validates :user, :presence => true
   validates :repo, :presence => true
   validates :sha, :presence => true, :uniqueness => {:scope => [:user,:repo]}
