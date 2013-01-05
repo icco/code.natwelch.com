@@ -18,7 +18,7 @@ Code.controllers  do
   end
 
   get "/data/weekly.csv" do
-    year = params["year"] || '2010'
+    year = params["year"] || Time.now.year.to_s
 
     data = Commit.order(:created_on).where(:user => Commit::USER).count(:group=>:created_on)
 
