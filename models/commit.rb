@@ -1,9 +1,3 @@
-# Models
-
-DB = Sequel.connect(ENV["DATABASE_URL"] || "postgres://localhost/code_stats")
-
-USER = "icco"
-
 class Commit < Sequel::Model(:commits)
   plugin :validation_helpers
 
