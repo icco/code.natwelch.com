@@ -128,6 +128,7 @@ function drawWeeklyChart(color, year, element) {
     svg.append("path")
       .datum(values)
       .attr("class", "line")
+      .attr("stroke", color)
       .attr("d", line);
 
     // Add the x-axis.
