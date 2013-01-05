@@ -23,7 +23,7 @@ Code.controllers  do
 
     data = Commit.order(:created_on).where(:user => Commit::USER).count(:group=>:created_on)
 
-    @stats = {}
+    @stats = Hash.new(0)
     ("01".."52").each {|week| @stats[week] = 0 }
     data.each do |row|
       if row[0].strftime("%Y") == @year
