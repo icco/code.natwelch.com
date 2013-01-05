@@ -108,13 +108,10 @@ function drawWeeklyChart(color, year, element) {
     .y(function(d) { return y(d.y); });
 
   d3.csv("/data/"+year+"/weekly.csv", function(data) {
-    console.log(data);
-
     var values = data.map(function(d) {
       return { x: parse(d.week), y: +d.commits };
     });
 
-    console.log(values);
     x.domain(d3.extent(values, function(d) { return d.x; }));
     y.domain(d3.extent(values, function(d) { return d.y; }));
 
