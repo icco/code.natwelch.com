@@ -81,7 +81,7 @@ function drawCommitChart(color) {
       .attr("x", w - 6)
       .attr("y", m[0] - 12)
       .attr("text-anchor", "end")
-      .text("github.com/icco : commits/day");
+      .text("commits/day");
   });
 }
 
@@ -148,6 +148,6 @@ function drawWeeklyChart(color, year, element) {
       .attr("x", w - 6)
       .attr("y", m[0] - 12)
       .attr("text-anchor", "end")
-      .text("github.com/icco : commits/week for " + year);
+      .text("commits/week for " + year);
   });
 }
