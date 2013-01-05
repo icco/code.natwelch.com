@@ -6,6 +6,4 @@ class Code < Padrino::Application
   register Padrino::Helpers
 
   enable :sessions
-
-  USER = "icco"
 end
