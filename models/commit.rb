@@ -2,7 +2,7 @@ class Commit <  ActiveRecord::Base
   validates :user, :presence => true
   validates :repo, :presence => true
   validates :sha, :presence => true
-  validates [ :user, :repo, :sha ], :uniqueness => true
+  #validates [ :user, :repo, :sha ], :uniqueness => true
 
   def self.fetchAllForTime day, month, year, hour
     require "open-uri"
