@@ -1,4 +1,4 @@
-class Commit < Sequel::Model(:commits)
+class Commit <  ActiveRecord::Base
   plugin :validation_helpers
 
   def validate
