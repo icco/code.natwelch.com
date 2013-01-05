@@ -1,8 +1,8 @@
 ##
 # Database config for relational db.
 connections = {
-  :development => "postgres://localhost/code",
-  :test => "postgres://postgres@localhost/code_test",
+  :development => "postgres://localhost/code_stats",
+  :test => "postgres://postgres@localhost/code_stats_test",
   :production => ENV['DATABASE_URL']
 }
 
