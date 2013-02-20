@@ -37,9 +37,9 @@ class Commit <  ActiveRecord::Base
         end
       end
     rescue Timeout::Error
-      logger.push "The request for #{uri} timed out...skipping.", :warning
+      logger.push "The request for #{uri} timed out...skipping.", :warn
     rescue OpenURI::HTTPError => e
-      logger.push "The request for #{uri} returned an error. #{e.message}", :warning
+      logger.push "The request for #{uri} returned an error. #{e.message}", :warn
     end
   end
 
@@ -69,7 +69,7 @@ class Commit <  ActiveRecord::Base
       c.save
       return c
     else
-      c.errors.each {|error| logger.push "ERROR SAVING COMMIT: #{error}", :warning }
+      logger.push("Error Saving Commit #{user}/#{repo}:#{c.sha}: #{c.errors.messages.inspect}", :warn)
       return nil
     end
   end
