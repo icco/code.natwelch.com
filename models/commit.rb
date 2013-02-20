@@ -23,7 +23,6 @@ class Commit <  ActiveRecord::Base
 
         Yajl::Parser.parse(js) do |event|
           if event["actor"] == USER and event["type"] == "PushEvent"
-            puts ""
 
             # TODO(icco): fix this so we record the user name of the commit
             # owner, not the repo owner.
@@ -31,17 +30,16 @@ class Commit <  ActiveRecord::Base
             repo = event["repository"]["name"]
             event["payload"]["shas"].each do |commit|
               sha = commit[0]
-              p self.factory user, repo, sha
+              ret = self.factory user, repo, sha
+              logger.push "Inserted #{ret}.", :info
             end
           end
         end
       end
     rescue Timeout::Error
-      puts ""
-      puts "The request for #{uri} timed out...skipping."
+      logger.push "The request for #{uri} timed out...skipping.", :warn
     rescue OpenURI::HTTPError => e
-      puts ""
-      puts "The request for #{uri} returned an error. #{e.message}"
+      logger.push "The request for #{uri} returned an error. #{e.message}", :warn
     end
   end
 
@@ -71,7 +69,7 @@ class Commit <  ActiveRecord::Base
       c.save
       return c
     else
-      c.errors.each {|error| puts "ERROR SAVING COMMIT: #{error}" }
+      logger.push("Error Saving Commit #{user}/#{repo}:#{c.sha}: #{c.errors.messages.inspect}", :warn)
       return nil
     end
   end
