@@ -36,9 +36,8 @@ namespace :cron do
     hours = 0..23
 
     hours.each do |hour|
-      print hour
       Commit.fetchAllForTime day, month, year, hour
-      print "."
+      logger.push "Inserted for #{year}-#{month}-#{day}, #{hour}:00", :info
     end
   end
 
