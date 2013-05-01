@@ -21,7 +21,7 @@ gem 'thin'
 gem 'yajl-ruby', :require => 'yajl'
 
 # Padrino Stable Gem
-gem 'padrino', '0.10.6'
+gem 'padrino', '~> 0.11'
 
 # For dev
 group :development do
