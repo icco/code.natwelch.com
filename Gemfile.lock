@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/pengwynn/octokit.git
-  revision: 831791438194b57c367415bf1fd8e91961623bd4
+  revision: 9a36c1a4c16e9d8baaaf06a68187b8e6e9bad3f2
   specs:
     octokit (1.24.0)
       addressable (~> 2.2)
