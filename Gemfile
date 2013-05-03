@@ -8,6 +8,7 @@ gem 'json'
 gem 'less'
 gem 'multi_json'
 gem 'octokit', :git => 'git://github.com/pengwynn/octokit.git'
+gem 'padrino', '~> 0.11'
 gem 'pg'
 gem 'rack', '~> 1.4'
 gem 'rack-less'
@@ -19,9 +20,6 @@ gem 'sinatra-flash', :require => 'sinatra/flash'
 gem 'therubyracer'
 gem 'thin'
 gem 'yajl-ruby', :require => 'yajl'
-
-# Padrino Stable Gem
-gem 'padrino', '~> 0.11'
 
 # For dev
 group :development do

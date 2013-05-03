@@ -6,7 +6,6 @@ PadrinoTasks.use(:database)
 PadrinoTasks.use(:activerecord)
 PadrinoTasks.init
 
-
 # Adds extended DateTime functionality
 require "date"
 
