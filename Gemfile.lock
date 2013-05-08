@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/pengwynn/octokit.git
-  revision: 9a36c1a4c16e9d8baaaf06a68187b8e6e9bad3f2
+  revision: 50c53ea2579fe9283ef4691a7bee6c621f1daeba
   specs:
     octokit (1.24.0)
       addressable (~> 2.2)
@@ -50,7 +50,7 @@ GEM
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
     mime-types (1.23)
-    multi_json (1.7.2)
+    multi_json (1.7.3)
     multipart-post (1.2.0)
     netrc (0.7.7)
     nokogiri (1.5.9)
