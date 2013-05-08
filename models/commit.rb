@@ -49,28 +49,32 @@ class Commit <  ActiveRecord::Base
     # Sleep until we have the ratelimit to do this.
     sleep(1) until Octokit.ratelimit > 2
 
-    gh_commit = Octokit.commit("#{user}/#{repo}", sha)
+    begin
+      gh_commit = Octokit.commit("#{user}/#{repo}", sha)
 
-    # This is to prevent counting repos I just forked and didn't do any work
-    # in. A few commits will still slip through thought that don't belong to
-    # me. I don't know why.
-    if gh_commit.author and gh_commit.author.login
-      c.user = gh_commit.author.login
-    else
-      c.user = user
-    end
+      # This is to prevent counting repos I just forked and didn't do any work
+      # in. A few commits will still slip through thought that don't belong to
+      # me. I don't know why.
+      if gh_commit.author and gh_commit.author.login
+        c.user = gh_commit.author.login
+      else
+        c.user = user
+      end
 
-    c.repo = repo
-    c.sha = sha
+      c.repo = repo
+      c.sha = sha
 
-    c.created_on = DateTime.iso8601(gh_commit.commit.author.date)
+      c.created_on = DateTime.iso8601(gh_commit.commit.author.date)
 
-    if c.valid?
-      c.save
-      return c
-    else
-      logger.push("Error Saving Commit #{user}/#{repo}:#{c.sha}: #{c.errors.messages.inspect}", :warn)
-      return nil
+      if c.valid?
+        c.save
+        return c
+      else
+        logger.push("Error Saving Commit #{user}/#{repo}:#{c.sha}: #{c.errors.messages.inspect}", :warn)
+        return nil
+      end
+    rescue Octokit::NotFound
+      logger.push("Error Saving Commit #{user}/#{repo}:#{sha}: 404", :warn)
     end
   end
 end
