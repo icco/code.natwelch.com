@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/pengwynn/octokit.git
-  revision: 7d9b57770862715e5c27efdb48f8eae501632eb3
+  revision: b4bcd5a1cd2b366312c4cadeb329e296d57d21e4
   specs:
     octokit (1.24.0)
       addressable (~> 2.2)
@@ -49,10 +49,12 @@ GEM
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
     mime-types (1.23)
+    mini_portile (0.5.0)
     multi_json (1.7.6)
     multipart-post (1.2.0)
     netrc (0.7.7)
-    nokogiri (1.5.10)
+    nokogiri (1.6.0)
+      mini_portile (~> 0.5.0)
     padrino (0.11.2)
       padrino-admin (= 0.11.2)
       padrino-cache (= 0.11.2)
@@ -94,8 +96,8 @@ GEM
       rack (>= 0.9)
     rake (10.0.4)
     ref (1.0.5)
-    sanitize (2.0.3)
-      nokogiri (>= 1.4.4, < 1.6)
+    sanitize (2.0.4)
+      nokogiri (~> 1.6.0)
     shotgun (0.9)
       rack (>= 1.0)
     sinatra (1.4.3)
