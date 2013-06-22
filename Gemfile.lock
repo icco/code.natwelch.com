@@ -94,7 +94,7 @@ GEM
       rack
     rack_csrf (2.4.0)
       rack (>= 0.9)
-    rake (10.0.4)
+    rake (10.1.0)
     ref (1.0.5)
     sanitize (2.0.4)
       nokogiri (~> 1.6.0)
