@@ -1,13 +1,13 @@
 source "https://rubygems.org"
 
 # Project requirements
-gem 'activerecord', :require => 'active_record'
+gem 'activerecord', '~> 3.0', :require => 'active_record'
 gem 'chronic'
 gem 'erubis', '~> 2.7.0'
 gem 'json'
 gem 'less'
 gem 'multi_json'
-gem 'octokit', :git => 'git://github.com/pengwynn/octokit.git'
+gem 'octokit'
 gem 'padrino', '~> 0.11'
 gem 'pg'
 gem 'rack', '~> 1.4'
