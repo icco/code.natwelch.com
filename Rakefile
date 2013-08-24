@@ -26,7 +26,7 @@ task :cron => [ "cron:hourly" ]
 
 task :stats do
   puts "Commits by #{USER}:\t#{Commit.filter(:user => USER).count}"
-  puts "Github Ratelimit:\t#{Octokit.ratelimit_remaining}/#{Octokit.ratelimit}"
+  puts "Github Ratelimit:\t#{Octokit.ratelimit.remaining}/#{Octokit.ratelimit.limit}"
 end
 
 namespace :cron do

@@ -47,7 +47,7 @@ class Commit <  ActiveRecord::Base
     c = Commit.new
 
     # Sleep until we have the ratelimit to do this.
-    sleep(1) until Octokit.ratelimit > 2
+    sleep(1) until Octokit.ratelimit.remaining > 2
 
     begin
       gh_commit = Octokit.commit("#{user}/#{repo}", sha)
