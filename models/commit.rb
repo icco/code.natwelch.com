@@ -64,7 +64,12 @@ class Commit <  ActiveRecord::Base
       c.repo = repo
       c.sha = sha
 
-      c.created_on = DateTime.iso8601(gh_commit.commit.author.date)
+      create_date = gh_commit.commit.author.date
+      if create_date.is_a? String
+        c.created_on = DateTime.iso8601(create_date)
+      else
+        c.created_on = create_date
+      end
 
       if c.valid?
         c.save
