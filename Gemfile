@@ -25,5 +25,6 @@ gem 'yajl-ruby', :require => 'yajl'
 
 # For dev
 group :development do
+  gem 'heroku'
   gem 'shotgun'
 end
