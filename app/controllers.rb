@@ -6,7 +6,7 @@ Code.controllers  do
   end
 
   get "/data/commit.csv", :cache => true do
-    expires_in ONE_HOUR
+    expires ONE_HOUR
 
     data = Commit.order(:created_on).where(:user => Commit::USER).count(:group=>:created_on)
 
@@ -21,7 +21,7 @@ Code.controllers  do
   end
 
   get "/data/:year/weekly.csv", :cache => true do
-    expires_in ONE_HOUR
+    expires ONE_HOUR
 
     @year = params[:year] || Time.now.year.to_s
     logger.info "Getting data for #{@year}."
