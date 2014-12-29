@@ -52,8 +52,12 @@ class Commit <  ActiveRecord::Base
       client = Octokit::Client.new({})
     end
 
+    if !Commit.where(:user => user, :repo =>, :sha => sha).limit(1).nil?
+      return nil
+    end
+
     # Sleep until we have the ratelimit to do this.
-    sleep(100) until client.ratelimit.remaining > 2
+    sleep(120) until client.ratelimit.remaining > 2
 
     begin
       gh_commit = client.commit("#{user}/#{repo}", sha)
