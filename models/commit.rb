@@ -52,7 +52,7 @@ class Commit <  ActiveRecord::Base
       client = Octokit::Client.new({})
     end
 
-    if !Commit.where(:user => user, :repo =>, :sha => sha).limit(1).nil?
+    if !Commit.where(:user => user, :repo => repo, :sha => sha).limit(1).nil?
       return nil
     end
 
