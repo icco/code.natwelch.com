@@ -14,9 +14,9 @@
 ActiveRecord::Schema.define(:version => 4) do
 
   create_table "commits", :force => true do |t|
-    t.text     "repo"
-    t.text     "user"
-    t.text     "sha"
+    t.string   "repo"
+    t.string   "user"
+    t.string   "sha"
     t.datetime "created_on"
   end
 
