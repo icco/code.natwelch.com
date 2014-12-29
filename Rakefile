@@ -13,6 +13,16 @@ PadrinoTasks.init
 
 USER = "icco"
 
+def new_client
+  options = {:auto_traversal => true, :netrc => true}
+  if ENV['GITHUB_CLIENT_ID']
+    options[:client_id] = ENV['GITHUB_CLIENT_ID']
+    options[:client_secret] = ENV['GITHUB_CLIENT_SECRET']
+    options[:netrc] = false
+  end
+  client = Octokit::Client.new(options)
+end
+
 desc "Run a local server."
 task :local do
   Kernel.exec("shotgun -s thin -p 9393")
@@ -28,8 +38,9 @@ task :cron => [ "cron:hourly" ]
 
 desc "Print github request stats."
 task :stats do
+  client = new_client
   puts "Commits by #{USER}:\t#{Commit.where(:user => USER).count}"
-  puts "Github Ratelimit:\t#{Octokit.ratelimit.remaining}/#{Octokit.ratelimit.limit}"
+  puts "Github Ratelimit:\t#{client.ratelimit.remaining}/#{client.ratelimit.limit}"
 end
 
 namespace :cron do
@@ -78,7 +89,7 @@ namespace :cron do
     # NOTE: If you have a lot of repos or lots of commits, you could blow out
     # your request quota from github. Remove the auto_traveral from the commits
     # call if this is the case.
-    client = Octokit::Client.new({:auto_traversal => true})
+    client = new_client
     client.repos(USER).each do |repo|
       puts "#{USER}/#{repo["name"]}"
       commits = client.commits("#{USER}/#{repo["name"]}").delete_if {|commit| commit.is_a? String }
