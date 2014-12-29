@@ -26,8 +26,9 @@ end
 desc "Runs all of the tasks that store data."
 task :cron => [ "cron:hourly" ]
 
+desc "Print github request stats."
 task :stats do
-  puts "Commits by #{USER}:\t#{Commit.filter(:user => USER).count}"
+  puts "Commits by #{USER}:\t#{Commit.where(:user => USER).count}"
   puts "Github Ratelimit:\t#{Octokit.ratelimit.remaining}/#{Octokit.ratelimit.limit}"
 end
 
