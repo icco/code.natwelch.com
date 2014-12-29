@@ -92,6 +92,6 @@ end
 namespace :db do
 
   desc "Erase and Rebuild the Database."
-  task :rebuild => [ 'db:erase', 'cron:rebuild', 'cron:get_older_commits' ]
+  task :rebuild => [ 'ar:migrate', 'cron:rebuild', 'cron:get_older_commits' ]
 
 end
