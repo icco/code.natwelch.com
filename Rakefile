@@ -14,7 +14,7 @@ PadrinoTasks.init
 USER = "icco"
 
 def new_client
-  options = {:auto_traversal => true, :netrc => true}
+  options = {:auto_paginate => true, :netrc => true}
   if ENV['GITHUB_CLIENT_ID']
     options[:client_id] = ENV['GITHUB_CLIENT_ID']
     options[:client_secret] = ENV['GITHUB_CLIENT_SECRET']
