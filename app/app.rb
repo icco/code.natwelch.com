@@ -1,5 +1,5 @@
 class Code < Padrino::Application
-  register LessInitializer
+  register SassInitializer
   use ActiveRecord::ConnectionAdapters::ConnectionManagement
   register Padrino::Rendering
   register Padrino::Helpers

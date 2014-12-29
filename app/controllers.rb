@@ -41,9 +41,4 @@ Code.controllers  do
     content_type "text/csv"
     render :"weekly_data.csv"
   end
-
-  get "/style.css", :cache => true do
-    content_type "text/css", :charset => "utf-8"
-    less :style
-  end
 end
