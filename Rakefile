@@ -94,7 +94,7 @@ namespace :cron do
       puts "#{USER}/#{repo["name"]}"
       commits = client.commits("#{USER}/#{repo["name"]}").delete_if {|commit| commit.is_a? String }
       commits.each do |commit|
-        p Commit.factory USER, repo['name'], commit['sha'], client
+        Commit.factory USER, repo['name'], commit['sha'], client
       end
     end
   end
