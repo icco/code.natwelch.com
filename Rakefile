@@ -20,7 +20,7 @@ def new_client
     options[:client_secret] = ENV['GITHUB_CLIENT_SECRET']
     options[:netrc] = false
   end
-  client = Octokit::Client.new(options)
+  return Octokit::Client.new(options)
 end
 
 desc "Run a local server."
@@ -53,9 +53,10 @@ namespace :cron do
     year = time.year
 
     hours = 0..23
+    client = new_client
 
     hours.each do |hour|
-      Commit.fetchAllForTime day, month, year, hour
+      Commit.fetchAllForTime day, month, year, hour, client
       logger.push "Inserted for #{year}-#{month}-#{day}, #{hour}:00", :info
     end
   end

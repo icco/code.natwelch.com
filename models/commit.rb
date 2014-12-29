@@ -5,7 +5,7 @@ class Commit <  ActiveRecord::Base
   validates :repo, :presence => true
   validates :sha, :presence => true, :uniqueness => {:scope => [:user,:repo]}
 
-  def self.fetchAllForTime day, month, year, hour
+  def self.fetchAllForTime day, month, year, hour, client = nil
     require "open-uri"
     require "zlib"
     require "yajl"
@@ -32,7 +32,7 @@ class Commit <  ActiveRecord::Base
             repo = event[:repository][:name]
             event[:payload][:shas].each do |commit|
               sha = commit[0]
-              ret = self.factory user, repo, sha
+              ret = self.factory user, repo, sha, client
               logger.push "Inserted #{ret}.", :info
             end
           end
@@ -49,7 +49,7 @@ class Commit <  ActiveRecord::Base
     c = Commit.new
 
     if client.nil?
-      client = Octokit::Client.new(options)
+      client = Octokit::Client.new({})
     end
 
     # Sleep until we have the ratelimit to do this.
