@@ -45,8 +45,12 @@ class Commit <  ActiveRecord::Base
     end
   end
 
-  def self.factory user, repo, sha
+  def self.factory user, repo, sha, client = nil
     c = Commit.new
+
+    if clien.nil?
+      client = Octokit::Client.new(options)
+    end
 
     # Sleep until we have the ratelimit to do this.
     sleep(100) until Octokit.ratelimit.remaining > 2
