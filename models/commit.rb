@@ -17,18 +17,20 @@ class Commit <  ActiveRecord::Base
 
     date = "#{"%4d" % year}-#{"%02d" % month}-#{"%02d" % day}-#{hour}"
     uri = URI.parse "http://data.githubarchive.org/#{date}.json.gz"
+    parser = Yajl::Parser.new(:symbolize_keys => true)
+
+    logger.info "Grabbing #{date}"
+
     begin
       uri.open do |gz|
         js = Zlib::GzipReader.new(gz).read
-
-        Yajl::Parser.parse(js) do |event|
-          if event["actor"] == USER and event["type"] == "PushEvent"
-
+        parser.parse(js) do |event|
+          if event[:actor] == USER and event[:type] == "PushEvent"
             # TODO(icco): fix this so we record the user name of the commit
             # owner, not the repo owner.
-            user = event["repository"]["owner"]
-            repo = event["repository"]["name"]
-            event["payload"]["shas"].each do |commit|
+            user = event[:repository][:owner]
+            repo = event[:repository][:name]
+            event[:payload][:shas].each do |commit|
               sha = commit[0]
               ret = self.factory user, repo, sha
               logger.push "Inserted #{ret}.", :info

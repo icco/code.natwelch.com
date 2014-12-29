@@ -58,7 +58,6 @@ namespace :cron do
     # instead we use a do-while loop.
     time = start
     begin
-      print "."
       Commit.fetchAllForTime time.day, time.month, time.year, time.hour
     end while (time += 3600) < finish
   end
