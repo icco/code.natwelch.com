@@ -48,15 +48,15 @@ class Commit <  ActiveRecord::Base
   def self.factory user, repo, sha, client = nil
     c = Commit.new
 
-    if clien.nil?
+    if client.nil?
       client = Octokit::Client.new(options)
     end
 
     # Sleep until we have the ratelimit to do this.
-    sleep(100) until Octokit.ratelimit.remaining > 2
+    sleep(100) until client.ratelimit.remaining > 2
 
     begin
-      gh_commit = Octokit.commit("#{user}/#{repo}", sha)
+      gh_commit = client.commit("#{user}/#{repo}", sha)
 
       # This is to prevent counting repos I just forked and didn't do any work
       # in. A few commits will still slip through thought that don't belong to
