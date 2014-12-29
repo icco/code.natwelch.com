@@ -1,7 +1,8 @@
 Code.controllers  do
   ONE_HOUR = 60*60
 
-  get :index, :cache => true do
+  get :index, :cache => Padrino.env != :development do
+    logger.info "This is development." if Padrino.env == :development
     render :index
   end
 
