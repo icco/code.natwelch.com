@@ -6,36 +6,40 @@ class Commit <  ActiveRecord::Base
   validates :sha, :presence => true, :uniqueness => {:scope => [:user,:repo]}
 
   def self.fetchAllForTime day, month, year, hour
+    require "open-uri"
+    require "zlib"
+    require "yajl"
 
     # Simple error checking.
     return nil if hour < 0 or hour > 23
     return nil if day < 1 or day > 31
     return nil if month < 1 or month > 12
 
-    # Construct URL.
     date = "#{"%4d" % year}-#{"%02d" % month}-#{"%02d" % day}-#{hour}"
-
-    require 'uri'
-    require 'yajl/gzip'
-    require 'yajl/deflate'
-    require 'yajl/http_stream'
-
     uri = URI.parse "http://data.githubarchive.org/#{date}.json.gz"
-    logger.debug "Grabbing #{uri}"
-    Yajl::HttpStream.get(uri, :symbolize_keys => true) do |event|
-      logger.debug event.keys
-      if event["actor"] == USER and event["type"] == "PushEvent"
+    begin
+      uri.open do |gz|
+        js = Zlib::GzipReader.new(gz).read
 
-        # TODO(icco): fix this so we record the user name of the commit
-        # owner, not the repo owner.
-        user = event["repository"]["owner"]
-        repo = event["repository"]["name"]
-        event["payload"]["shas"].each do |commit|
-          sha = commit[0]
-          ret = self.factory user, repo, sha
-          logger.push "Inserted #{ret}.", :info
+        Yajl::Parser.parse(js) do |event|
+          if event["actor"] == USER and event["type"] == "PushEvent"
+
+            # TODO(icco): fix this so we record the user name of the commit
+            # owner, not the repo owner.
+            user = event["repository"]["owner"]
+            repo = event["repository"]["name"]
+            event["payload"]["shas"].each do |commit|
+              sha = commit[0]
+              ret = self.factory user, repo, sha
+              logger.push "Inserted #{ret}.", :info
+            end
+          end
         end
       end
+    rescue Timeout::Error
+      logger.push "The request for #{uri} timed out...skipping.", :warn
+    rescue OpenURI::HTTPError => e
+      logger.push "The request for #{uri} returned an error. #{e.message}", :warn
     end
   end
 

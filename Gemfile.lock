@@ -56,6 +56,7 @@ GEM
       nokogiri
     octokit (3.7.0)
       sawyer (~> 0.6.0, >= 0.5.3)
+    oj (2.11.1)
     padrino (0.12.4)
       padrino-admin (= 0.12.4)
       padrino-cache (= 0.12.4)
@@ -146,6 +147,7 @@ DEPENDENCIES
   json
   multi_json
   octokit
+  oj
   padrino (~> 0.12)
   pg
   rack
