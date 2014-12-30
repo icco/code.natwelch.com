@@ -58,8 +58,7 @@ class Commit <  ActiveRecord::Base
       return nil
     end
 
-    # Sleep until we have the ratelimit to do this.
-    sleep(120) until client.ratelimit.remaining > 2
+    raise "Github ratelimit remaining #{client.ratelimit.remaining} of #{client.ratelimit.limit} is not enough." if client.ratelimit.remaining <= 2
 
     begin
       gh_commit = client.commit("#{user}/#{repo}", sha)
