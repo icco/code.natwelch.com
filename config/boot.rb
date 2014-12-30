@@ -28,7 +28,8 @@ end
 # Add your after (RE)load hooks here
 #
 Padrino.after_load do
-  logger.info "Running as #{Padrino.env}."
+  logger.info "Running as #{Padrino.env.inspect}."
+  logger.info "Logger: #{logger.inspect}"
 end
 
 Padrino.load!
