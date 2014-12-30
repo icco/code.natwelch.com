@@ -52,6 +52,31 @@ class Commit <  ActiveRecord::Base
     end
   end
 
+  # This makes sure all commits from a repo's commit history are in the
+  # database and have the correct data.
+  #
+  # NOTE: This will probably blow out your github request quota.
+  def self.update_repo user, repo, client = nil, check = true
+    if client.nil?
+      client = Octokit::Client.new({})
+    end
+
+    commits = client.commits("#{user}/#{repo}").delete_if {|commit| commit.is_a? String }
+    commited_commits = Commit.where(:repo => repo).group(:repo).count.values.first.to_i
+    if commited_commits < commits.count
+      logger.info "#{user}/#{repo} has #{commited_commits} commited commits, but needs #{commits.count}."
+      commits.each do |commit|
+        Commit.factory user, repo, commit['sha'], client, check
+      end
+      commited_commits = Commit.where(:repo => repo).group(:repo).count.values.first.to_i
+      logger.info "#{user}/#{repo} has #{commited_commits} commited commits, which is now enough (#{commits.count}). Done."
+    else
+      logger.info "#{user}/#{repo} has #{commited_commits} commited commits, which is enough (#{commits.count}). Skipping."
+    end
+
+    return commited_commits
+  end
+
   # This creates a Commit.
   #
   # NOTE: repo + sha are supposed to be unique, so if those two already exist,
@@ -99,7 +124,7 @@ class Commit <  ActiveRecord::Base
 
       if commit.valid?
         commit.save
-        return c
+        return commit
       else
         logger.push("Error Saving Commit #{user}/#{repo}:#{commit.sha}: #{commit.errors.messages.inspect}", :warn)
         return nil

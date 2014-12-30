@@ -33,14 +33,40 @@ task :local do
   Kernel.exec("bundle exec shotgun -s thin")
 end
 
-desc "Runs all of the tasks that store data."
-task :cron => [ "cron:hourly" ]
-
 desc "Print github request stats."
 task :stats do
   client = new_client
   puts "Commits by #{USER}:\t#{Commit.where(:user => USER).count}"
   puts "Github Ratelimit:\t#{client.ratelimit.remaining}/#{client.ratelimit.limit}"
+end
+
+namespace :history do
+
+  desc "Loops through every hour this year, and puts it all into the db."
+  task :rebuild do
+    # githubarchive started 3/11/2012
+    start = Chronic.parse "March 11, 2012"
+    finish = Time.now
+
+    # We can't iterate over time in Ruby (Time#succ is crazy expensive), so
+    # instead we use a do-while loop.
+    time = start
+    begin
+      Commit.fetchAllForTime time.day, time.month, time.year, time.hour, new_client
+    end while (time += 3600) < finish
+  end
+
+  desc "Gets all of the commits from every public repo of USER."
+  task :get_older_commits do
+    # Now, because we will probably want some data from before when github
+    # archive started, lets pound github's api and get some older commits.
+    client = new_client
+    client.repos(USER).each do |repo|
+      logger.info "#{USER}/#{repo["name"]}"
+      Commit.update_repo USER, repo["name"], client, false
+    end
+  end
+
 end
 
 namespace :cron do
@@ -61,57 +87,14 @@ namespace :cron do
     end
   end
 
-  desc "Loops through every hour this year, and puts it all into the db."
-  task :rebuild do
-    # githubarchive started 3/11/2012
-    start = Chronic.parse "March 11, 2012"
-    finish = Time.now
-
-    # We can't iterate over time in Ruby (Time#succ is crazy expensive), so
-    # instead we use a do-while loop.
-    time = start
-    begin
-      Commit.fetchAllForTime time.day, time.month, time.year, time.hour
-    end while (time += 3600) < finish
-  end
-
-  desc "gets all of the commits from every public repo of USER."
-  task :get_older_commits do
-
-    # For testing forked repos.
-    # commits = Octokit.commits("icco/downforeveryoneorjustme").delete_if {|commit| commit.is_a? String }
-    # commits.each do |commit|
-    #   p Commit.factory "icco", "downforeveryoneorjustme", commit['sha']
-    # end
-
+  desc "Gets all of the commits from every public repo of USER."
+  task :daily do
     # Now, because we will probably want some data from before when github
     # archive started, lets pound github's api and get some older commits.
-    #
-    # NOTE: If you have a lot of repos or lots of commits, you could blow out
-    # your request quota from github. Remove the auto_traveral from the commits
-    # call if this is the case.
     client = new_client
-    client.repos(USER).each do |repo|
+    client.repos(USER).sample(10).each do |repo|
       logger.info "#{USER}/#{repo["name"]}"
-      commits = client.commits("#{USER}/#{repo["name"]}").delete_if {|commit| commit.is_a? String }
-      commited_commits = Commit.where(:repo => repo["name"]).group(:repo).count.values.first.to_i
-      if commited_commits < commits.count
-        logger.info "#{USER}/#{repo["name"]} has #{commited_commits} commited commits, but needs #{commits.count}."
-        commits.each do |commit|
-          Commit.factory USER, repo['name'], commit['sha'], client
-        end
-        commited_commits = Commit.where(:repo => repo["name"]).group(:repo).count.values.first.to_i
-        logger.info "#{USER}/#{repo["name"]} has #{commited_commits} commited commits, which is now enough (#{commits.count}). Done."
-      else
-        logger.info "#{USER}/#{repo["name"]} has #{commited_commits} commited commits, which is enough (#{commits.count}). Skipping."
-      end
+      Commit.update_repo USER, repo["name"], client
     end
   end
-end
-
-namespace :db do
-
-  desc "Erase and Rebuild the Database."
-  task :rebuild => [ 'ar:migrate', 'cron:rebuild', 'cron:get_older_commits' ]
-
 end
