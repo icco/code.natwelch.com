@@ -40,7 +40,7 @@ end
 
 namespace :history do
 
-  desc "Loops through every hour this year, and puts it all into the db."
+  desc "Loops through every hour, and puts it all into the db."
   task :rebuild do
     # githubarchive started 3/11/2012
     start = Chronic.parse "March 11, 2012"
@@ -51,6 +51,21 @@ namespace :history do
     time = start
     begin
       Commit.fetchAllForTime time.day, time.month, time.year, time.hour, new_client
+    end while (time += 3600) < finish
+  end
+
+  desc "Loops through every hour of 2014, and puts it all into the db."
+  task :rebuild_2014 do
+    # githubarchive started 3/11/2012
+    start = Chronic.parse "January 1, 2014"
+    finish = Time.now
+    client = new_client
+
+    # We can't iterate over time in Ruby (Time#succ is crazy expensive), so
+    # instead we use a do-while loop.
+    time = start
+    begin
+      Commit.fetchAllForTime time.day, time.month, time.year, time.hour, client
     end while (time += 3600) < finish
   end
 
