@@ -18,7 +18,24 @@ def new_client
     options[:client_secret] = ENV['GITHUB_CLIENT_SECRET']
     options[:netrc] = false
   end
-  return Octokit::Client.new(options)
+  client = Octokit::Client.new(options)
+  client.user USER
+
+  return client
+end
+
+# Gets repos for user and all of their public orgs.
+def user_repos user_name, client
+  raise "Github ratelimit remaining #{client.ratelimit.remaining} of #{client.ratelimit.limit} is not enough." if client.ratelimit.remaining <= 2
+  logger.info "Looking up repos for #{user_name.inspect}."
+  repos = client.repos(user_name).map {|r| r["full_name"].split("/") }
+  client.orgs(user_name).each do |org|
+    logger.info "Adding #{org["login"]} repos."
+    repos = repos.concat(client.org_repos(org["login"]).map {|r| r["full_name"].split("/") })
+  end
+  logger.info "Found #{repos.count} for #{user_name.inspect}."
+
+  return repos
 end
 
 desc "Run a local server."
@@ -71,13 +88,20 @@ namespace :history do
 
   desc "Gets all of the commits from every public repo of USER."
   task :get_older_commits do
-    logger.info "USER is #{USER.inspect}."
     # Now, because we will probably want some data from before when github
     # archive started, lets pound github's api and get some older commits.
     client = new_client
-    client.repos(USER).each do |repo|
-      logger.info "#{USER}/#{repo["name"]}"
-      Commit.update_repo USER, repo["name"], client, false
+    user_repos(USER, client).each do |repo|
+      logger.info "#{repo[0]}/#{repo[1]}"
+      Commit.update_repo repo[0], repo[1], client, false
+    end
+  end
+
+  desc "Dumps all of a user and his org's repos."
+  task :dump_repos do
+    client = new_client
+    user_repos(USER, client).each do |repo|
+      logger.info repo.inspect
     end
   end
 end
@@ -104,9 +128,9 @@ namespace :cron do
   task :daily do
     logger.info "USER is #{USER.inspect}."
     client = new_client
-    client.repos(USER).sample(10).each do |repo|
-      logger.info "#{USER}/#{repo["name"]}"
-      Commit.update_repo USER, repo["name"], client
+    user_repos(USER, client).sample(10).each do |repo|
+      logger.info "#{repo[0]}/#{repo[1]}"
+      Commit.update_repo repo[0], repo[1], client, true
     end
   end
 end
