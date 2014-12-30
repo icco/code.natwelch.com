@@ -10,7 +10,6 @@ class Commit <  ActiveRecord::Base
   def self.fetchAllForTime day, month, year, hour, client = nil
     require "open-uri"
     require "zlib"
-    require "yajl"
 
     # Simple error checking.
     return nil if hour < 0 or hour > 23
