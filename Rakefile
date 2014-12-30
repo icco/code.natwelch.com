@@ -11,8 +11,6 @@ require "date"
 
 PadrinoTasks.init
 
-USER = "icco"
-
 def new_client
   options = {:auto_paginate => true, :netrc => true}
   if ENV['GITHUB_CLIENT_ID']
@@ -58,6 +56,7 @@ namespace :history do
 
   desc "Gets all of the commits from every public repo of USER."
   task :get_older_commits do
+    logger.info "USER is #{USER.inspect}."
     # Now, because we will probably want some data from before when github
     # archive started, lets pound github's api and get some older commits.
     client = new_client
@@ -88,6 +87,7 @@ namespace :cron do
 
   desc "Gets all of the commits from 10 random repos of USER."
   task :daily do
+    logger.info "USER is #{USER.inspect}."
     client = new_client
     client.repos(USER).sample(10).each do |repo|
       logger.info "#{USER}/#{repo["name"]}"

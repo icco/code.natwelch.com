@@ -9,7 +9,8 @@ Code.controllers  do
   get "/data/commit.csv", :cache => true do
     expires ONE_HOUR
 
-    data = Commit.order(:created_on).where(:user => Commit::USER).count(:group=>:created_on)
+    logger.info "USER is #{USER.inspect}."
+    data = Commit.order(:created_on).where(:user => USER).count(:group=>:created_on)
 
     @stats = Hash.new(0)
     data.each do |row|
@@ -27,7 +28,8 @@ Code.controllers  do
     @year = params[:year] || Time.now.year.to_s
     logger.info "Getting data for #{@year}."
 
-    data = Commit.order(:created_on).where(:user => Commit::USER).count(:group=>:created_on)
+    logger.info "USER is #{USER.inspect}."
+    data = Commit.order(:created_on).where(:user => USER).count(:group=>:created_on)
 
     @stats = Hash.new(0)
     ("01".."52").each {|week| @stats[week] = 0 }

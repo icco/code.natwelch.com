@@ -1,6 +1,4 @@
 class Commit <  ActiveRecord::Base
-  USER = "icco"
-
   validates :user, :presence => true
   validates :repo, :presence => true
   validates :sha, :presence => true, :uniqueness => {:scope => [:repo]}
@@ -14,6 +12,8 @@ class Commit <  ActiveRecord::Base
   def self.fetchAllForTime day, month, year, hour, client = nil
     require "open-uri"
     require "zlib"
+
+    logger.info "USER is #{USER.inspect}."
 
     # Simple error checking.
     return nil if hour < 0 or hour > 23

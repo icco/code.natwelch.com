@@ -18,6 +18,9 @@ Padrino::Logger::Config[:production][:stream] = :stdout
 ## Configure your I18n
 I18n.default_locale = :en
 
+# What user we care about.
+USER = "icco"
+
 ##
 # Add your before (RE)load hooks here
 #
@@ -30,6 +33,7 @@ end
 Padrino.after_load do
   logger.info "Running as #{Padrino.env.inspect}."
   logger.info "Logger: #{logger.inspect}"
+  logger.info "USER is #{USER.inspect}."
 end
 
 Padrino.load!
