@@ -38,7 +38,9 @@ class Commit <  ActiveRecord::Base
             event[:payload][:shas].each do |commit|
               sha = commit[0]
               ret = self.factory user, repo, sha, client
-              logger.push "Inserted #{ret}.", :info
+              if !ret.nil?
+                logger.info "Inserted #{ret}."
+              end
             end
           end
         end
@@ -54,15 +56,16 @@ class Commit <  ActiveRecord::Base
   #
   # NOTE: repo + sha are supposed to be unique, so if those two already exist,
   # but the user is wrong, we'll try and update (if check? is true).
-  def self.factory user, repo, sha, client = nil, check? = false
+  def self.factory user, repo, sha, client = nil, check = false
     if client.nil?
       client = Octokit::Client.new({})
     end
 
     commit = Commit.where(:repo => repo, :sha => sha).first_or_initialize
-    if !commit.new_record? and !commit.changed? and !check?
+    if !commit.new_record? and !commit.changed? and !check
       logger.push "#{user}/#{repo}##{sha} already exists as #{commit.inspect}.", :info
-      return commit
+      # We return nil for better logging above.
+      return nil
     end
 
     raise "Github ratelimit remaining #{client.ratelimit.remaining} of #{client.ratelimit.limit} is not enough." if client.ratelimit.remaining <= 2
