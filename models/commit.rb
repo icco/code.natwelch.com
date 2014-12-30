@@ -5,6 +5,10 @@ class Commit <  ActiveRecord::Base
   validates :repo, :presence => true
   validates :sha, :presence => true, :uniqueness => {:scope => [:repo]}
 
+  def to_s
+    "#{user}/#{repo}##{sha}"
+  end
+
   # Grabs the commit log from github archive for the specified hour, parses
   # that and then saves all commits pushed by the USER to the database.
   def self.fetchAllForTime day, month, year, hour, client = nil
