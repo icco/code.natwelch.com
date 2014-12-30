@@ -66,7 +66,6 @@ namespace :history do
       Commit.update_repo USER, repo["name"], client, false
     end
   end
-
 end
 
 namespace :cron do
