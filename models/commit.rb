@@ -3,7 +3,7 @@ class Commit <  ActiveRecord::Base
 
   validates :user, :presence => true
   validates :repo, :presence => true
-  validates :sha, :presence => true, :uniqueness => {:scope => [:user,:repo]}
+  validates :sha, :presence => true, :uniqueness => {:scope => [:repo]}
 
   # Grabs the commit log from github archive for the specified hour, parses
   # that and then saves all commits pushed by the USER to the database.
