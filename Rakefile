@@ -94,7 +94,7 @@ namespace :cron do
     client.repos(USER).each do |repo|
       logger.info "#{USER}/#{repo["name"]}"
       commits = client.commits("#{USER}/#{repo["name"]}").delete_if {|commit| commit.is_a? String }
-      commited_commits = Commit.where(:repo => repo["name"]).group(:repo).count.values.first
+      commited_commits = Commit.where(:repo => repo["name"]).group(:repo).count.values.first.to_i
       if commited_commits < commits.count
         logger.info "#{USER}/#{repo["name"]} has #{commited_commits} commited commits, but needs #{commits.count}."
         commits.each do |commit|
