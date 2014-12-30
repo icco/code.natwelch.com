@@ -68,6 +68,11 @@ class Commit <  ActiveRecord::Base
       return nil
     end
 
+    # No need to check.
+    if check and !commit.new_record? and commit.user.eql? user
+      return nil
+    end
+
     raise "Github ratelimit remaining #{client.ratelimit.remaining} of #{client.ratelimit.limit} is not enough." if client.ratelimit.remaining <= 2
 
     begin
