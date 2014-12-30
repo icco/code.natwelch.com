@@ -100,6 +100,8 @@ namespace :cron do
         commits.each do |commit|
           Commit.factory USER, repo['name'], commit['sha'], client
         end
+        commited_commits = Commit.where(:repo => repo["name"]).group(:repo).count.values.first.to_i
+        logger.info "#{USER}/#{repo["name"]} has #{commited_commits} commited commits, which is now enough (#{commits.count}). Done."
       else
         logger.info "#{USER}/#{repo["name"]} has #{commited_commits} commited commits, which is enough (#{commits.count}). Skipping."
       end
