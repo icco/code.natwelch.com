@@ -52,7 +52,7 @@ class Commit <  ActiveRecord::Base
       client = Octokit::Client.new({})
     end
 
-    commit = Commit.where(:user => user, :repo => repo, :sha => sha).limit(1)
+    commit = Commit.where(:repo => repo, :sha => sha).limit(1)
     if !commit.empty?
       logger.push "#{user}/#{repo}##{sha} already exists as #{commit.inspect}.", :info
       return nil
