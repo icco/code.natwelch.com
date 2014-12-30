@@ -92,10 +92,16 @@ namespace :cron do
     # call if this is the case.
     client = new_client
     client.repos(USER).each do |repo|
-      puts "#{USER}/#{repo["name"]}"
+      logger.info "#{USER}/#{repo["name"]}"
       commits = client.commits("#{USER}/#{repo["name"]}").delete_if {|commit| commit.is_a? String }
-      commits.each do |commit|
-        Commit.factory USER, repo['name'], commit['sha'], client
+      commited_commits = Commit.where(:repo => repo["name"]).group(:repo).count.values.first
+      if commited_commits < commits.count
+        logger.info "#{USER}/#{repo["name"]} has #{commited_commits} commited commits, but needs #{commits.count}."
+        commits.each do |commit|
+          Commit.factory USER, repo['name'], commit['sha'], client
+        end
+      else
+        logger.info "#{USER}/#{repo["name"]} has #{commited_commits} commited commits, which is enough (#{commits.count}). Skipping."
       end
     end
   end
