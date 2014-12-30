@@ -63,7 +63,7 @@ class Commit <  ActiveRecord::Base
 
     commits = client.commits("#{user}/#{repo}").delete_if {|commit| commit.is_a? String }
     commited_commits = Commit.where(:repo => repo).group(:repo).count.values.first.to_i
-    if commited_commits < commits.count
+    if check or commited_commits < commits.count
       logger.info "#{user}/#{repo} has #{commited_commits} commited commits, but needs #{commits.count}."
       commits.each do |commit|
         Commit.factory user, repo, commit['sha'], client, check
