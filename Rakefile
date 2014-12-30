@@ -86,10 +86,8 @@ namespace :cron do
     end
   end
 
-  desc "Gets all of the commits from every public repo of USER."
+  desc "Gets all of the commits from 10 random repos of USER."
   task :daily do
-    # Now, because we will probably want some data from before when github
-    # archive started, lets pound github's api and get some older commits.
     client = new_client
     client.repos(USER).sample(10).each do |repo|
       logger.info "#{USER}/#{repo["name"]}"
