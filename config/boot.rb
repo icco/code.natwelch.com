@@ -13,6 +13,7 @@ Padrino::Logger::Config[:development][:log_level]  = :devel
 Padrino::Logger::Config[:development][:log_static] = true
 
 Padrino::Logger::Config[:production][:log_level]  = :info
+Padrino::Logger::Config[:production][:stream] = :stdout
 
 ## Configure your I18n
 I18n.default_locale = :en
@@ -27,6 +28,7 @@ end
 # Add your after (RE)load hooks here
 #
 Padrino.after_load do
+  logger.info "Running as #{Padrino.env}."
 end
 
 Padrino.load!
