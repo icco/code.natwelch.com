@@ -5,6 +5,8 @@ class Commit <  ActiveRecord::Base
   validates :repo, :presence => true
   validates :sha, :presence => true, :uniqueness => {:scope => [:user,:repo]}
 
+  # Grabs the commit log from github archive for the specified hour, parses
+  # that and then saves all commits pushed by the USER to the database.
   def self.fetchAllForTime day, month, year, hour, client = nil
     require "open-uri"
     require "zlib"
@@ -45,6 +47,12 @@ class Commit <  ActiveRecord::Base
     end
   end
 
+  # This creates a Commit.
+  #
+  # NOTE: repo + sha are supposed to be unique, so if those two already exist,
+  # but the user is wrong, we'll try and update.
+  #
+  # TODO(icco): Make the note true.
   def self.factory user, repo, sha, client = nil
     c = Commit.new
 
