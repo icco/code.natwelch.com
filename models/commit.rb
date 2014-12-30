@@ -49,20 +49,16 @@ class Commit <  ActiveRecord::Base
   # This creates a Commit.
   #
   # NOTE: repo + sha are supposed to be unique, so if those two already exist,
-  # but the user is wrong, we'll try and update.
-  #
-  # TODO(icco): Make the note true.
-  def self.factory user, repo, sha, client = nil
-    c = Commit.new
-
+  # but the user is wrong, we'll try and update (if check? is true).
+  def self.factory user, repo, sha, client = nil, check? = false
     if client.nil?
       client = Octokit::Client.new({})
     end
 
-    commit = Commit.where(:repo => repo, :sha => sha).limit(1)
-    if !commit.empty?
+    commit = Commit.where(:repo => repo, :sha => sha).first_or_initialize
+    if !commit.new_record? and !commit.changed? and !check?
       logger.push "#{user}/#{repo}##{sha} already exists as #{commit.inspect}.", :info
-      return nil
+      return commit
     end
 
     raise "Github ratelimit remaining #{client.ratelimit.remaining} of #{client.ratelimit.limit} is not enough." if client.ratelimit.remaining <= 2
@@ -74,26 +70,26 @@ class Commit <  ActiveRecord::Base
       # in. A few commits will still slip through thought that don't belong to
       # me. I don't know why.
       if gh_commit.author and gh_commit.author.login
-        c.user = gh_commit.author.login
+        commit.user = gh_commit.author.login
       else
-        c.user = user
+        commit.user = user
       end
 
-      c.repo = repo
-      c.sha = sha
+      commit.repo = repo
+      commit.sha = sha
 
       create_date = gh_commit.commit.author.date
       if create_date.is_a? String
-        c.created_on = DateTime.iso8601(create_date)
+        commit.created_on = DateTime.iso8601(create_date)
       else
-        c.created_on = create_date
+        commit.created_on = create_date
       end
 
-      if c.valid?
-        c.save
+      if commit.valid?
+        commit.save
         return c
       else
-        logger.push("Error Saving Commit #{user}/#{repo}:#{c.sha}: #{c.errors.messages.inspect}", :warn)
+        logger.push("Error Saving Commit #{user}/#{repo}:#{commit.sha}: #{commit.errors.messages.inspect}", :warn)
         return nil
       end
     rescue Octokit::NotFound
