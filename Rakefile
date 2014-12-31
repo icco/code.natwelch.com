@@ -18,6 +18,16 @@ def new_client
     options[:client_secret] = ENV['GITHUB_CLIENT_SECRET']
     options[:netrc] = false
   end
+
+  if Padrino.env == :development
+    stack = Faraday::RackBuilder.new do |builder|
+      builder.response :logger
+      builder.use Octokit::Response::RaiseError
+      builder.adapter Faraday.default_adapter
+    end
+    Octokit.middleware = stack
+  end
+
   client = Octokit::Client.new(options)
 
   return client
