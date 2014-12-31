@@ -117,8 +117,8 @@ class Commit <  ActiveRecord::Base
           if !found_user.nil?
             commit.user = found_user
           else
-            logger.warn "No login found for #{repo}##{sha}: #{gh_commit.author.email.inspect}. Using blank."
-            commit.user = ""
+            logger.warn "No login found for #{repo}##{sha}: #{gh_commit.author.email.inspect}. Using 'null'."
+            commit.user = "null"
           end
         else
           logger.warn "No email or login found for #{repo}##{sha}: gh_commit.author: #{gh_commit.author.inspect}"
