@@ -110,7 +110,19 @@ class Commit <  ActiveRecord::Base
       # in. A few commits will still slip through thought that don't belong to
       # me. I don't know why.
       blob = gh_commit[:commit]
-      if blob[:author] or gh_commit.author
+      if blob[:author]
+        if blob[:author][:email]
+          found_user = self.user_lookup blob[:author][:email]
+          if !found_user.nil?
+            commit.user = found_user
+          else
+            logger.warn "No login found for #{repo}##{sha}: #{blob[:author][:email]}. Using 'null'."
+            commit.user = "null"
+          end
+        else
+          logger.warn "No email found in author blob for #{repo}##{sha}: #{blob[:author].inspect}."
+        end
+      elsif gh_commit.author
         if gh_commit.author.login
           commit.user = gh_commit.author.login
         elsif gh_commit.author.email
@@ -119,14 +131,6 @@ class Commit <  ActiveRecord::Base
             commit.user = found_user
           else
             logger.warn "No login found for #{repo}##{sha}: #{gh_commit.author.email.inspect}. Using 'null'."
-            commit.user = "null"
-          end
-        elsif blob[:author][:email]
-          found_user = self.user_lookup blob[:author][:email]
-          if !found_user.nil?
-            commit.user = found_user
-          else
-            logger.warn "No login found for #{repo}##{sha}: #{blob[:author][:email]}. Using 'null'."
             commit.user = "null"
           end
         else
