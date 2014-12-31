@@ -109,10 +109,22 @@ class Commit <  ActiveRecord::Base
       # This is to prevent counting repos I just forked and didn't do any work
       # in. A few commits will still slip through thought that don't belong to
       # me. I don't know why.
-      if gh_commit.author and gh_commit.author.login
-        commit.user = gh_commit.author.login
+      if gh_commit.author
+        if gh_commit.author.login
+          commit.user = gh_commit.author.login
+        elsif gh_commit.author.email
+          found_user = self.user_lookup gh_commit.author.email
+          if !found_user.nil?
+            commit.user = found_user
+          else
+            logger.warn "No login found for #{repo}##{sha}: #{gh_commit.author.email.inspect}. Using blank."
+            commit.user = ""
+          end
+        else
+          logger.warn "No email or login found for #{repo}##{sha}: gh_commit.author: #{gh_commit.author.inspect}"
+        end
       else
-        logger.warn "No user found for #{repo}##{sha}: gh_commit: #{gh_commit.inspect}"
+        logger.warn "No author found for #{repo}##{sha}: gh_commit: #{gh_commit.inspect}"
       end
 
       commit.repo = repo
