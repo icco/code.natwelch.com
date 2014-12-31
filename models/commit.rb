@@ -30,16 +30,19 @@ class Commit <  ActiveRecord::Base
       uri.open do |gz|
         js = Zlib::GzipReader.new(gz).read
         parser.parse(js) do |event|
-          if event[:actor] == USER and event[:type] == "PushEvent"
-            # TODO(icco): fix this so we record the user name of the commit
-            # owner, not the repo owner.
-            user = event[:repository][:owner]
-            repo = event[:repository][:name]
-            event[:payload][:shas].each do |commit|
-              sha = commit[0]
-              ret = self.factory user, repo, sha, client
-              if !ret.nil?
-                logger.info "Inserted #{ret}."
+          if event[:actor] == USER
+            logger.debug "Found Event: #{event.inspect}."
+            if event[:type] == "PushEvent"
+              repo = event[:repository][:name]
+              event[:payload][:shas].each do |commit|
+                sha = commit[0]
+                user = self.lookup_user commit[1]
+                if !user.nil?
+                  ret = self.factory user, repo, sha, client
+                  if !ret.nil?
+                    logger.info "Inserted #{ret}."
+                  end
+                end
               end
             end
           end
@@ -108,8 +111,6 @@ class Commit <  ActiveRecord::Base
       # me. I don't know why.
       if gh_commit.author and gh_commit.author.login
         commit.user = gh_commit.author.login
-      else
-        commit.user = user
       end
 
       commit.repo = repo
