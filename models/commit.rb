@@ -68,7 +68,7 @@ class Commit <  ActiveRecord::Base
     commited_commits = Commit.where(:repo => repo).group(:repo).count.values.first.to_i
     if check or commited_commits < commits.count
       logger.info "#{user}/#{repo} has #{commited_commits} commited commits, but needs #{commits.count}."
-      commits.each do |commit|
+      commits.shuffle.each do |commit|
         Commit.factory user, repo, commit['sha'], client, check
       end
       commited_commits = Commit.where(:repo => repo).group(:repo).count.values.first.to_i
