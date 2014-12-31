@@ -36,7 +36,7 @@ class Commit <  ActiveRecord::Base
               repo = event[:repository][:name]
               event[:payload][:shas].each do |commit|
                 sha = commit[0]
-                user = self.lookup_user commit[1]
+                user = self.lookup_user commit[1], client
                 if !user.nil?
                   ret = self.factory user, repo, sha, client
                   if !ret.nil?
@@ -112,7 +112,7 @@ class Commit <  ActiveRecord::Base
       blob = gh_commit[:commit]
       if blob[:author]
         if blob[:author][:email]
-          found_user = self.lookup_user blob[:author][:email]
+          found_user = self.lookup_user blob[:author][:email], client
           if !found_user.nil?
             commit.user = found_user
           else
@@ -126,7 +126,7 @@ class Commit <  ActiveRecord::Base
         if gh_commit.author.login
           commit.user = gh_commit.author.login
         elsif gh_commit.author.email
-          found_user = self.lookup_user gh_commit.author.email
+          found_user = self.lookup_user gh_commit.author.email, client
           if !found_user.nil?
             commit.user = found_user
           else
