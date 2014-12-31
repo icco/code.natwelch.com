@@ -7,5 +7,6 @@ class Code < Padrino::Application
   enable :sessions
 
   register Padrino::Cache
+  set :cache, Padrino::Cache.new(:File, :dir => Padrino.root('tmp', app_name.to_s, 'cache')) # default choice
   enable :caching
 end
