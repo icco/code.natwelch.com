@@ -176,12 +176,14 @@ class Commit <  ActiveRecord::Base
 
     # Shit isn't cached, do the API call (Ratelimit is 20 calls per minute).
     response = client.search_users email
+    user = nil
     if response[:total_count] != 1
-      logger.warn "Inconsistent number of results for #{email.inspect}: #{response.inspect}."
-      return nil
+      logger.warn "Inconsistent number of results for #{email.inspect}: #{response.inspect}. Setting to null."
+      user = "null"
+    else
+      user = response[:items][0][:login]
     end
 
-    user = response[:items][0][:login]
     Padrino.cache[key] = user
     return user
   end
