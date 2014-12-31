@@ -1,16 +1,17 @@
 Code.controllers  do
   ONE_HOUR = 60*60
+  SHOULD_CACHE = Padrino.env != :development
 
-  get :index, :cache => Padrino.env != :development do
+  get :index, :cache => SHOULD_CACHE do
     logger.info "This is development." if Padrino.env == :development
     render :index
   end
 
-  get "/data/commit.csv", :cache => true do
+  get "/data/commit.csv", :cache => SHOULD_CACHE do
     expires ONE_HOUR
 
     logger.info "USER is #{USER.inspect}."
-    data = Commit.order(:created_on).where(:user => USER).count(:group=>:created_on)
+    data = Commit.order(:created_on).where(:user => USER).where("created_on >= ?", Chronic.parse("2009-01-01")).count(:group=>:created_on)
 
     @stats = Hash.new(0)
     data.each do |row|
@@ -22,7 +23,7 @@ Code.controllers  do
     erb :"commit_data.csv"
   end
 
-  get "/data/:year/weekly.csv", :cache => true do
+  get "/data/:year/weekly.csv", :cache => SHOULD_CACHE do
     expires ONE_HOUR
 
     @year = params[:year] || Time.now.year.to_s
