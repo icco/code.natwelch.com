@@ -26,8 +26,8 @@
 # override these settings in the subapps as needed.
 #
 Padrino.configure_apps do
-  # enable :sessions
-  set :session_secret, '6a2b8cd000913ed7c8d8d569ab2027bbca041efe651d07b199fdea6a1c9683c4'
+  enable :sessions
+  set :session_secret, ENV['SESSION_SECRET'] || 'blargh'
 end
 
 # Mounts the core application for this project
