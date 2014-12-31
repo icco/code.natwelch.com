@@ -5,6 +5,7 @@ ruby '2.1.5'
 # Project requirements
 gem 'activerecord', '~> 3.0', :require => 'active_record'
 gem 'chronic'
+gem 'dalli'
 gem 'erubis'
 gem 'json'
 gem 'multi_json'

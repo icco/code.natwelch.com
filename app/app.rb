@@ -9,11 +9,14 @@ class Code < Padrino::Application
   register Padrino::Cache
   enable :caching
   if Padrino.env.eql? :production
-    auth_pair = [
-      ENV['MEMCACHIER_PASSWORD'],
-      ENV['MEMCACHIER_USERNAME']
-    ]
-    set :cache, Padrino::Cache.new(:Memcached, ENV['MEMCACHIER_SERVERS'], :credentials => auth_pair, :exception_retry_limit => 1)
+    cache = Dalli::Client.new((ENV["MEMCACHIER_SERVERS"] || "").split(","), {
+      :username => ENV["MEMCACHIER_USERNAME"],
+      :password => ENV["MEMCACHIER_PASSWORD"],
+      :failover => true,
+      :socket_timeout => 1.5,
+      :socket_failure_delay => 0.2,
+    })
+    set :cache, Padrino::Cache.new(:Memcached, :backend => cache)
   else
     set :cache, Padrino::Cache.new(:File, :dir => Padrino.root('tmp', app_name.to_s, 'cache')) # default choice
   end

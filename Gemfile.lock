@@ -18,6 +18,7 @@ GEM
     chronic (0.10.2)
     crass (1.0.1)
     daemons (1.1.9)
+    dalli (2.7.2)
     erubis (2.7.0)
     eventmachine (1.0.4)
     excon (0.42.1)
@@ -142,6 +143,7 @@ PLATFORMS
 DEPENDENCIES
   activerecord (~> 3.0)
   chronic
+  dalli
   erubis
   heroku
   json
