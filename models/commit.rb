@@ -111,6 +111,8 @@ class Commit <  ActiveRecord::Base
       # me. I don't know why.
       if gh_commit.author and gh_commit.author.login
         commit.user = gh_commit.author.login
+      else
+        logger.warn "No user found for #{repo}##{sha}: gh_commit: #{gh_commit.inspect}"
       end
 
       commit.repo = repo
@@ -127,7 +129,7 @@ class Commit <  ActiveRecord::Base
         commit.save
         return commit
       else
-        logger.push("Error Saving Commit #{user}/#{repo}:#{commit.sha}: #{commit.errors.messages.inspect}", :warn)
+        logger.push("Error Saving Commit #{user}/#{repo}:#{commit.sha}: #{commit.errors.messages.inspect}", :error)
         return nil
       end
     rescue Octokit::NotFound
