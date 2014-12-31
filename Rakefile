@@ -55,6 +55,14 @@ task :stats do
   puts "Github Ratelimit:\t#{client.ratelimit.remaining}/#{client.ratelimit.limit}"
 end
 
+task :ping do
+  require "open-uri"
+  uri = URI.parse "http://code.natwelch.com"
+  uri.open do |data|
+    logger.info "Pinging code.natwelch.com. Headers: #{data.meta.inspect}"
+  end
+end
+
 namespace :history do
 
   desc "Loops through every hour, and puts it all into the db."
