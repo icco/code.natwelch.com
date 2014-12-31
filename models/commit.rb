@@ -133,4 +133,28 @@ class Commit <  ActiveRecord::Base
       logger.push("Error Saving Commit #{user}/#{repo}:#{sha}: 404", :warn)
     end
   end
+
+  # Lookup a user by email and return their username. Caches locally.
+  def self.lookup_user email, client = nil
+    if client.nil?
+      client = Octokit::Client.new({})
+    end
+
+    key = "user_#{email}"
+    cache_results = Padrino.cache[key]
+    if cache_results
+      return cache_results
+    end
+
+    # Shit isn't cached, do the API call (Ratelimit is 20 calls per minute).
+    response = client.search_users email
+    if response[:total_count] != 1
+      logger.warn "Inconsistent number of results for #{email.inspect}: #{response.inspect}."
+      return nil
+    end
+
+    user = response[:items][0][:login]
+    Padrino.cache[key] = user
+    return user
+  end
 end

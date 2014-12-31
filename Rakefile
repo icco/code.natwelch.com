@@ -12,14 +12,13 @@ require "date"
 PadrinoTasks.init
 
 def new_client
-  options = {:auto_paginate => true, :netrc => true}
+  options = {:auto_paginate => true}
   if ENV['GITHUB_CLIENT_ID']
     options[:client_id] = ENV['GITHUB_CLIENT_ID']
     options[:client_secret] = ENV['GITHUB_CLIENT_SECRET']
     options[:netrc] = false
   end
   client = Octokit::Client.new(options)
-  client.user USER
 
   return client
 end
@@ -55,12 +54,20 @@ task :stats do
   puts "Github Ratelimit:\t#{client.ratelimit.remaining}/#{client.ratelimit.limit}"
 end
 
+desc "Ping code.natwelch.com."
 task :ping do
   require "open-uri"
   uri = URI.parse "http://code.natwelch.com"
   uri.open do |data|
     logger.info "Pinging code.natwelch.com. Headers: #{data.meta.inspect}"
   end
+end
+
+desc "Dump user info for a user."
+task :print_user do
+  client = new_client
+  user = Commit.lookup_user "nat@natwelch.com"
+  p client.user user
 end
 
 namespace :history do
