@@ -101,9 +101,7 @@ class Commit <  ActiveRecord::Base
       return nil
     end
 
-    if client.ratelimit.limit > 1000
-      raise "Github ratelimit remaining #{client.ratelimit.remaining} of #{client.ratelimit.limit} is not enough." if client.ratelimit.remaining < 2
-    end
+    raise "Github ratelimit remaining #{client.ratelimit.remaining} of #{client.ratelimit.limit} is not enough." if client.ratelimit.remaining < 2
 
     begin
       gh_commit = client.commit("#{user}/#{repo}", sha)
