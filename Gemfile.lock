@@ -23,10 +23,10 @@ GEM
       unf (>= 0.0.5, < 1.0.0)
     erubis (2.7.0)
     eventmachine (1.0.7)
-    excon (0.45.3)
+    excon (0.45.4)
     faraday (0.9.1)
       multipart-post (>= 1.2, < 3)
-    heroku (3.39.5)
+    heroku (3.40.6)
       heroku-api (>= 0.3.19)
       launchy (>= 0.3.2)
       multi_json (>= 1.10)
@@ -61,7 +61,7 @@ GEM
       nokogiri
     octokit (4.0.1)
       sawyer (~> 0.6.0, >= 0.5.3)
-    oj (2.12.9)
+    oj (2.12.11)
     padrino (0.12.5)
       padrino-admin (= 0.12.5)
       padrino-cache (= 0.12.5)
@@ -175,4 +175,4 @@ DEPENDENCIES
   yajl-ruby
 
 BUNDLED WITH
-   1.10.5
+   1.10.6
