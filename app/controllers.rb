@@ -11,7 +11,7 @@ Code.controllers  do
     expires ONE_HOUR
 
     logger.info "USER is #{USER.inspect}."
-    data = Commit.order(:created_on).where(:user => USER).where("created_on >= ?", Chronic.parse("2009-01-01")).count(:group=>:created_on)
+    data = Commit.order(:created_on).where(:user => USER).where("created_on >= ?", Chronic.parse("2009-01-01")).group(:created_on).count()
 
     @stats = Hash.new(0)
     data.each do |row|
@@ -30,7 +30,7 @@ Code.controllers  do
     logger.info "Getting data for #{@year}."
 
     logger.info "USER is #{USER.inspect}."
-    data = Commit.order(:created_on).where(:user => USER).count(:group=>:created_on)
+    data = Commit.order(:created_on).where(:user => USER).group(:created_on).count()
 
     @stats = Hash.new(0)
     ("01".."52").each {|week| @stats[week] = 0 }
