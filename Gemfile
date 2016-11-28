@@ -1,9 +1,9 @@
 source "https://rubygems.org"
 
-ruby "2.3.0"
+ruby "2.3.1"
 
 # Project requirements
-gem "activerecord", :require => "active_record"
+gem "activerecord", "< 5.0", :require => "active_record"
 gem "chronic"
 gem "dalli"
 gem "erubis"
