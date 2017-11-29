@@ -11,7 +11,7 @@ gem "json"
 gem "multi_json"
 gem "octokit"
 gem "oj"
-gem "padrino", ">= 0.12"
+gem "padrino", "~> 0.12.0"
 gem "pg"
 gem "rack"
 gem "rack_csrf", :require => "rack/csrf"
@@ -26,6 +26,5 @@ gem "yajl-ruby", :require => "yajl"
 
 # For dev
 group :development do
-  gem "heroku"
   gem "shotgun"
 end
