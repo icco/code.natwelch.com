@@ -8,8 +8,8 @@ class Code < Padrino::Application
 
   register Padrino::Cache
   enable :caching
-  if Padrino.env.eql? :production
-    cache = Dalli::Client.new((ENV["MEMCACHIER_SERVERS"] || "").split(","), {
+  if Padrino.env.eql? :production && ENV["MEMCACHIER_SERVERS"] && ENV["MEMCACHIER_USERNAME"] && ENV["MEMCACHIER_PASSWORD"]
+cache = Dalli::Client.new((ENV["MEMCACHIER_SERVERS"] || "").split(","), {
       :username => ENV["MEMCACHIER_USERNAME"],
       :password => ENV["MEMCACHIER_PASSWORD"],
       :failover => true,
