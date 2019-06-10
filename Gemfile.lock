@@ -94,19 +94,14 @@ GEM
     rack_csrf (2.6.0)
       rack (>= 1.1.0)
     rake (12.3.2)
-    rb-fsevent (0.10.3)
-    rb-inotify (0.10.0)
-      ffi (~> 1.0)
     ref (2.0.0)
     sanitize (5.0.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.8.0)
       nokogumbo (~> 2.0)
-    sass (3.7.4)
-      sass-listen (~> 4.0.0)
-    sass-listen (4.0.0)
-      rb-fsevent (~> 0.9, >= 0.9.4)
-      rb-inotify (~> 0.9, >= 0.9.7)
+    sassc (2.0.1)
+      ffi (~> 1.9)
+      rake
     sawyer (0.8.2)
       addressable (>= 2.3.5)
       faraday (> 0.8, < 2.0)
@@ -153,7 +148,7 @@ DEPENDENCIES
   rack_csrf
   rake
   sanitize
-  sass
+  sassc
   shotgun
   sinatra
   sinatra-flash
