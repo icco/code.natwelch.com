@@ -7,6 +7,10 @@ Code.controllers  do
     render :index
   end
 
+  get :healthz, :cache => false do
+    "ok"
+  end
+
   get "/data/commit.csv", :cache => SHOULD_CACHE do
     expires ONE_HOUR
 
