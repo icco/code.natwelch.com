@@ -86,11 +86,14 @@ GEM
       padrino-core (= 0.12.9)
     padrino-support (0.12.9)
       activesupport (>= 3.1)
-    pg (1.1.4)
+    pg (0.21.0)
     public_suffix (3.1.0)
     rack (2.0.7)
     rack-protection (2.0.5)
       rack
+    rack-sassc (0.1.0)
+      rack (>= 1.0)
+      sassc (~> 2.0)
     rack_csrf (2.6.0)
       rack (>= 1.1.0)
     rake (12.3.2)
@@ -143,8 +146,9 @@ DEPENDENCIES
   octokit
   oj
   padrino (~> 0.12.0)
-  pg
+  pg (~> 0.18)
   rack
+  rack-sassc
   rack_csrf
   rake
   sanitize
