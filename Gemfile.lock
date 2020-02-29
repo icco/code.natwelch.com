@@ -96,7 +96,7 @@ GEM
       sassc (~> 2.0)
     rack_csrf (2.6.0)
       rack (>= 1.1.0)
-    rake (12.3.2)
+    rake (12.3.3)
     ref (2.0.0)
     sanitize (5.0.0)
       crass (~> 1.0.2)
