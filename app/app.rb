@@ -1,10 +1,8 @@
 class Code < Padrino::Application
-  register SassInitializer
-  use ActiveRecord::ConnectionAdapters::ConnectionManagement
-  register Padrino::Rendering
+  use ConnectionPoolManagement
   register Padrino::Helpers
-
   enable :sessions
+  register SassInitializer
 
   register Padrino::Cache
   enable :caching
