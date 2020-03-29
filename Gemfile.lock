@@ -132,7 +132,7 @@ DEPENDENCIES
   chronic
   dalli
   erubis
-  json
+  json (>= 2.3.0)
   multi_json
   octokit
   oj
