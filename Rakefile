@@ -2,8 +2,7 @@ require 'bundler/setup'
 require 'padrino-core/cli/rake'
 require "date"
 
-require File.expand_path('../config/boot.rb', __FILE__)
-
+PadrinoTasks.use(:activerecord)
 PadrinoTasks.use(:pg)
 PadrinoTasks.init
 
