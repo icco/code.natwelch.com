@@ -49,3 +49,6 @@ if connections[Padrino.env]
 else
   logger.push("No database configuration for #{Padrino.env.inspect}", :fatal)
 end
+
+# Timestamps are in the utc by default.
+ActiveRecord::Base.default_timezone = :utc
