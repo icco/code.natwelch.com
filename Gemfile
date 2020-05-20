@@ -3,7 +3,7 @@ source "https://rubygems.org"
 # Padrino supports Ruby version 2.2.2 and later
 ruby "2.7.0"
 
-gem "activerecord", ">= 3.1", :require => "active_record"
+gem "activerecord", ">= 6.0.3.1", :require => "active_record"
 gem "chronic"
 gem "dalli"
 gem "erubis"
