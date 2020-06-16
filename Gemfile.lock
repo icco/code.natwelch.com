@@ -93,7 +93,7 @@ GEM
     rake (13.0.1)
     ref (2.0.0)
     ruby2_keywords (0.0.2)
-    sanitize (5.1.0)
+    sanitize (5.2.1)
       crass (~> 1.0.2)
       nokogiri (>= 1.8.0)
       nokogumbo (~> 2.0)
