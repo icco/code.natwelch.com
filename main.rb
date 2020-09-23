@@ -1,5 +1,3 @@
-
-
 class Code < Sinatra::Base
   use ConnectionPoolManagement
   enable :sessions
@@ -18,9 +16,7 @@ class Code < Sinatra::Base
 
   end
 
-  get "/data/commit.csv", :cache => SHOULD_CACHE do
-    expires ONE_HOUR
-
+  get "/data/commit.csv" do
     logger.info "USER is #{USER.inspect}."
     data = Commit.order(:created_on).where(:user => USER).where("created_on >= ?", Chronic.parse("2009-01-01")).group(:created_on).count()
 
@@ -34,9 +30,7 @@ class Code < Sinatra::Base
     erb :"commit_data.csv"
   end
 
-  get "/data/:year/weekly.csv", :cache => SHOULD_CACHE do
-    expires ONE_HOUR
-
+  get "/data/:year/weekly.csv" do
     @year = params[:year] || Time.now.year.to_s
     logger.info "Getting data for #{@year}."
 

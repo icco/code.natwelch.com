@@ -6,12 +6,9 @@ module SassInitializer
     require 'rack/sassc'
 
     app.use Rack::SassC, {
-      always_update: (Padrino.env == :development),
-      css_location: Padrino.root("public/css"),
-      full_exception: (Padrino.env == :development),
-      never_update: (Padrino.env == :production),
+      css_location: "public/css",
       style: :compact,
-      template_location: Padrino.root("app/css"),
+      template_location: "css",
     }
   end
 end
