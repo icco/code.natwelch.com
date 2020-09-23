@@ -12,7 +12,7 @@ class Code < Sinatra::Base
   set :protect_from_csrf, true
 
   get "/" do
-    render :index
+    erb :index
   end
 
   get "/healthz" do
@@ -56,6 +56,6 @@ class Code < Sinatra::Base
 
     etag "data/weekly-#{@year}-#{Commit.maximum(:created_on)}"
     content_type "text/csv"
-    render :"weekly_data.csv"
+    erb :"weekly_data.csv"
   end
 end
