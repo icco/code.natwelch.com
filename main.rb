@@ -28,14 +28,20 @@ class Code < Sinatra::Base
 
     client = new_client
     (0..23).each do |hour|
-      Commit.fetchAllForTime day, month, year, hour, client
-      logger.info "Inserted for #{year}-#{month}-#{day}, #{hour}:00"
+      Spork.spork do
+        Commit.fetchAllForTime day, month, year, hour, client
+        logger.info "Inserted for #{year}-#{month}-#{day}, #{hour}:00"
+      end
     end
 
-    user_repos(USER, client).sample(10).each do |repo|
-      logger.info "#{repo[0]}/#{repo[1]}"
-      Commit.update_repo repo[0], repo[1], client, true
+    Spork.spork do
+      user_repos(USER, client).sample(10).each do |repo|
+        logger.info "#{repo[0]}/#{repo[1]}"
+        Commit.update_repo repo[0], repo[1], client, true
+      end
     end
+
+    "ok"
   end
 
   get "/data/commit.csv" do
