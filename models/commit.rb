@@ -49,9 +49,9 @@ class Commit <  ActiveRecord::Base
         end
       end
     rescue Timeout::Error
-      logger.push "The request for #{uri} timed out...skipping.", :warn
+      logger.warn "The request for #{uri} timed out...skipping."
     rescue OpenURI::HTTPError => e
-      logger.push "The request for #{uri} returned an error. #{e.message}", :warn
+      logger.warn "The request for #{uri} returned an error. #{e.message}"
     end
   end
 
