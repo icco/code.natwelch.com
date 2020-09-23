@@ -21,7 +21,21 @@ class Code < Sinatra::Base
 
 
   get "/cron" do
+    time = Chronic.parse "yesterday"
+    day = time.day
+    month = time.month
+    year = time.year
 
+    client = new_client
+    (0..23).each do |hour|
+      Commit.fetchAllForTime day, month, year, hour, client
+      logger.push "Inserted for #{year}-#{month}-#{day}, #{hour}:00", :info
+    end
+
+    user_repos(USER, client).sample(10).each do |repo|
+      logger.info "#{repo[0]}/#{repo[1]}"
+      Commit.update_repo repo[0], repo[1], client, true
+    end
   end
 
   get "/data/commit.csv" do
@@ -58,4 +72,31 @@ class Code < Sinatra::Base
     content_type "text/csv"
     erb :"weekly_data.csv"
   end
+end
+
+def new_client
+  options = {:auto_paginate => true}
+  if ENV['GITHUB_CLIENT_ID']
+    options[:client_id] = ENV['GITHUB_CLIENT_ID']
+    options[:client_secret] = ENV['GITHUB_CLIENT_SECRET']
+    options[:netrc] = false
+  end
+
+  client = Octokit::Client.new(options)
+
+  return client
+end
+
+# Gets repos for user and all of their public orgs.
+def user_repos user_name, client
+  raise "Github ratelimit remaining #{client.ratelimit.remaining} of #{client.ratelimit.limit} is not enough." if client.ratelimit.remaining <= 2
+  logger.info "Looking up repos for #{user_name.inspect}."
+  repos = client.repos(user_name).map {|r| r["full_name"].split("/") }
+  client.orgs(user_name).each do |org|
+    logger.info "Adding #{org["login"]} repos."
+    repos = repos.concat(client.org_repos(org["login"]).map {|r| r["full_name"].split("/") })
+  end
+  logger.info "Found #{repos.count} for #{user_name.inspect}."
+
+  return repos
 end
