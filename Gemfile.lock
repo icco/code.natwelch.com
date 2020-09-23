@@ -64,6 +64,7 @@ GEM
     tilt (2.0.10)
     tzinfo (1.2.7)
       thread_safe (~> 0.1)
+    yajl-ruby (1.4.1)
     zeitwerk (2.4.0)
 
 PLATFORMS
@@ -84,6 +85,7 @@ DEPENDENCIES
   sassc
   sinatra (>= 2.0.8.1)
   thin (>= 1.7.2)
+  yajl-ruby
 
 RUBY VERSION
    ruby 2.7.0p0
