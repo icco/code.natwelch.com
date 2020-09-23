@@ -1,10 +1,4 @@
-##
-# Database config for relational db.
-connections = {
-  :development => "postgres://localhost/code_stats",
-  :test => "postgres://postgres@localhost/code_stats_test",
-  :production => ENV['DATABASE_URL']
-}
+logger = Logger.new(STDOUT)
 
 # Setup our logger
 ActiveRecord::Base.logger = logger
@@ -23,32 +17,28 @@ ActiveSupport.use_standard_json_time_format = true
 ActiveSupport.escape_html_entities_in_json = false
 
 # Now we can estabilish connection with our db
-if connections[Padrino.env]
-  url = URI(connections[Padrino.env])
-  options = {
-    :adapter => url.scheme,
-    :host => url.host,
-    :port => url.port,
-    :database => url.path[1..-1],
-    :username => url.user,
-    :password => url.password
-  }
+url = URI(ENV['DATABASE_URL'])
+options = {
+  :adapter => url.scheme,
+  :host => url.host,
+  :port => url.port,
+  :database => url.path[1..-1],
+  :username => url.user,
+  :password => url.password
+}
 
-  case url.scheme
-  when "sqlite"
-    options[:adapter] = "sqlite3"
-    options[:database] = url.host + url.path
-  when "postgres"
-    options[:adapter] = "postgresql"
-  end
-
-  # Log what we are connecting to.
-  logger.push " DB: #{options.inspect}", :devel
-
-  ActiveRecord::Base.establish_connection(options)
-else
-  logger.push("No database configuration for #{Padrino.env.inspect}", :fatal)
+case url.scheme
+when "sqlite"
+  options[:adapter] = "sqlite3"
+  options[:database] = url.host + url.path
+when "postgres"
+  options[:adapter] = "postgresql"
 end
+
+# Log what we are connecting to.
+logger.debug " DB: #{options.inspect}"
+
+ActiveRecord::Base.establish_connection(options)
 
 # Timestamps are in the utc by default.
 ActiveRecord::Base.default_timezone = :utc

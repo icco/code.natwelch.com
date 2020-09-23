@@ -1,5 +1,6 @@
 # What user we care about.
 USER = "icco"
+logger = Logger.new(STDOUT)
 
 class Code < Sinatra::Base
   use ConnectionPoolManagement
