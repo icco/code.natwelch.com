@@ -1,14 +1,21 @@
-Code.controllers  do
-  ONE_HOUR = 60*60
-  SHOULD_CACHE = Padrino.env != :development
 
-  get :index, :cache => false do
-    logger.info "This is development." if Padrino.env == :development
+
+class Code < Sinatra::Base
+  use ConnectionPoolManagement
+  enable :sessions
+  register SassInitializer
+
+  get "/" do
     render :index
   end
 
-  get :healthz, :cache => false do
+  get "/healthz" do
     "ok"
+  end
+
+
+  get "/cron" do
+
   end
 
   get "/data/commit.csv", :cache => SHOULD_CACHE do
