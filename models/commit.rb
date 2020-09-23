@@ -22,14 +22,14 @@ class Commit <  ActiveRecord::Base
 
     date = "#{"%4d" % year}-#{"%02d" % month}-#{"%02d" % day}-#{hour}"
     uri = URI.parse "http://data.githubarchive.org/#{date}.json.gz"
-    parser = Yajl::Parser.new(:symbolize_keys => true)
+    Oj.default_options = {symbolize_names: true}
 
     logger.info "Grabbing #{date}"
 
     begin
       uri.open do |gz|
         js = Zlib::GzipReader.new(gz).read
-        parser.parse(js) do |event|
+        Oj.load(js) do |event|
           if event[:actor] == USER
             logger.debug "Found Event: #{event.inspect}."
             if event[:type] == "PushEvent"
