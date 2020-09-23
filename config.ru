@@ -1,9 +1,13 @@
 #!/usr/bin/env rackup
 # encoding: utf-8
 
-# This file can be used to start Padrino,
-# just execute it from the command line.
+require 'bundler/setup'
+Bundler.require(:default)
 
-require File.expand_path("../config/boot.rb", __FILE__)
+Dir[File.join(__dir__, 'lib', '*.rb')].each { |file| require file }
+Dir[File.join(__dir__, 'models', '*.rb')].each { |file| require file }
 
-run Padrino.application
+require File.dirname(__FILE__) + "/database.rb"
+require File.dirname(__FILE__) + "/main.rb"
+
+run Code
