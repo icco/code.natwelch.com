@@ -1,7 +1,14 @@
+# What user we care about.
+USER = "icco"
+
 class Code < Sinatra::Base
   use ConnectionPoolManagement
   enable :sessions
   register SassInitializer
+
+  set :session_secret, ENV['SESSION_SECRET'] || 'blargh'
+  set :protection, :except => :path_traversal
+  set :protect_from_csrf, true
 
   get "/" do
     render :index
