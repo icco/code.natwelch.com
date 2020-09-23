@@ -13,7 +13,6 @@ class Commit <  ActiveRecord::Base
     require "open-uri"
     require "zlib"
 
-    logger.info "USER is #{USER.inspect}."
 
     # Simple error checking.
     return nil if hour < 0 or hour > 23
@@ -24,7 +23,7 @@ class Commit <  ActiveRecord::Base
     uri = URI.parse "http://data.githubarchive.org/#{date}.json.gz"
     Oj.default_options = {symbolize_names: true}
 
-    logger.info "Grabbing #{date}"
+    logger.info "Grabbing #{date} for #{USER.inspect}"
 
     begin
       uri.open do |gz|
@@ -168,12 +167,6 @@ class Commit <  ActiveRecord::Base
       client = Octokit::Client.new({})
     end
 
-    key = "user_#{email}"
-    cache_results = Padrino.cache[key]
-    if cache_results
-      return cache_results
-    end
-
     # Shit isn't cached, do the API call (Ratelimit is 20 calls per minute).
     response = client.search_users email
     user = nil
@@ -184,7 +177,6 @@ class Commit <  ActiveRecord::Base
       user = response[:items][0][:login]
     end
 
-    Padrino.cache[key] = user
     return user
   end
 end
