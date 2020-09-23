@@ -29,7 +29,7 @@ class Code < Sinatra::Base
     client = new_client
     (0..23).each do |hour|
       Commit.fetchAllForTime day, month, year, hour, client
-      logger.push "Inserted for #{year}-#{month}-#{day}, #{hour}:00", :info
+      logger.info "Inserted for #{year}-#{month}-#{day}, #{hour}:00"
     end
 
     user_repos(USER, client).sample(10).each do |repo|
