@@ -19,29 +19,10 @@ class Code < Sinatra::Base
     "ok"
   end
 
+  post "/save" do 
+    payload = JSON.parse(request.body.read).symbolize_keys
 
-  get "/cron" do
-    time = Chronic.parse "yesterday"
-    day = time.day
-    month = time.month
-    year = time.year
-
-    client = new_client
-    (0..23).each do |hour|
-      Spork.spork do
-        Commit.fetchAllForTime day, month, year, hour, client
-        logger.info "Inserted for #{year}-#{month}-#{day}, #{hour}:00"
-      end
-    end
-
-    Spork.spork do
-      user_repos(USER, client).sample(10).each do |repo|
-        logger.info "#{repo[0]}/#{repo[1]}"
-        Commit.update_repo repo[0], repo[1], client, true
-      end
-    end
-
-    "ok"
+    Commit.factory payload[:user], payload[:repo], payload[:sha], nil, true
   end
 
   get "/data/commit.csv" do

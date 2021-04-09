@@ -7,53 +7,6 @@ class Commit <  ActiveRecord::Base
     "#{user}/#{repo}##{sha}"
   end
 
-  # Grabs the commit log from github archive for the specified hour, parses
-  # that and then saves all commits pushed by the USER to the database.
-  def self.fetchAllForTime day, month, year, hour, client = nil
-    require "open-uri"
-    require "zlib"
-
-
-    # Simple error checking.
-    return nil if hour < 0 or hour > 23
-    return nil if day < 1 or day > 31
-    return nil if month < 1 or month > 12
-
-    date = "#{"%4d" % year}-#{"%02d" % month}-#{"%02d" % day}-#{hour}"
-    uri = URI.parse "http://data.githubarchive.org/#{date}.json.gz"
-    Oj.default_options = {symbolize_names: true}
-
-    logger.info "Grabbing #{date} for #{USER.inspect}"
-
-    begin
-      uri.open do |gz|
-        js = Zlib::GzipReader.new(gz).read
-        Oj.load(js) do |event|
-          if event[:actor] == USER
-            logger.debug "Found Event: #{event.inspect}."
-            if event[:type] == "PushEvent"
-              repo = event[:repository][:name]
-              event[:payload][:shas].each do |commit|
-                sha = commit[0]
-                user = self.lookup_user commit[1], client
-                if !user.nil?
-                  ret = self.factory user, repo, sha, client
-                  if !ret.nil?
-                    logger.info "Inserted #{ret}."
-                  end
-                end
-              end
-            end
-          end
-        end
-      end
-    rescue Timeout::Error
-      logger.warn "The request for #{uri} timed out...skipping."
-    rescue OpenURI::HTTPError => e
-      logger.warn "The request for #{uri} returned an error. #{e.message}"
-    end
-  end
-
   # This makes sure all commits from a repo's commit history are in the
   # database and have the correct data.
   #
