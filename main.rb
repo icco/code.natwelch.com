@@ -13,8 +13,6 @@ class Code < Sinatra::Base
   use Google::Cloud::ErrorReporting::Middleware
   use Google::Cloud::Trace::Middleware
 
-  logger = env["rack.logger"]
-  ActiveRecord::Base.logger = logger
   ActiveRecord::Base.include_root_in_json = true
   ActiveRecord::Base.store_full_sti_class = true
   ActiveSupport.use_standard_json_time_format = true
@@ -31,10 +29,6 @@ class Code < Sinatra::Base
     password: url.password,
     adapter: "postgresql"
   }
-
-  # Log what we are connecting to.
-  logger.debug " DB: #{options.inspect}"
-
   ActiveRecord::Base.establish_connection(options)
 
   use ConnectionPoolManagement
