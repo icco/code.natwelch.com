@@ -37,8 +37,7 @@ func (c *Commit) CheckAndSave(ctx context.Context, client *github.Client, db *go
 		return fmt.Errorf("commit SHA cannot be empty")
 	}
 
-	result := db.WithContext(ctx).Where("user = ? AND repo = ? AND sha = ?", c.User, c.Repo, c.SHA).First(c)
-	if err != nil {
+	if result := db.WithContext(ctx).Where("user = ? AND repo = ? AND sha = ?", c.User, c.Repo, c.SHA).First(c); result.Error != nil {
 		if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return result.Error
 		}
@@ -48,7 +47,7 @@ func (c *Commit) CheckAndSave(ctx context.Context, client *github.Client, db *go
 		}
 	}
 
-	if c.CreatedOn.Zero() {
+	if c.CreatedOn.IsZero() {
 		cmt, _, err := client.Git.GetCommit(ctx, c.User, c.Repo, c.SHA)
 		if err != nil {
 			return err
@@ -58,7 +57,8 @@ func (c *Commit) CheckAndSave(ctx context.Context, client *github.Client, db *go
 		c.User = cmt.GetCommitter().GetLogin()
 	}
 
-	return db.WithContext(ctx).Save(c)
+	result := db.WithContext(ctx).Save(c)
+	return result.Error
 }
 
 func UserRepos(ctx context.Context, client *github.Client, user string) ([]*github.Repository, error) {
@@ -74,7 +74,7 @@ func UserRepos(ctx context.Context, client *github.Client, user string) ([]*gith
 	}
 
 	for _, o := range orgs {
-		orepos, _, err := client.Repositories.ListByOrg(ctx, o.GetLogin(), opts)
+		orepos, _, err := client.Repositories.ListByOrg(ctx, o.GetLogin(), nil)
 		if err != nil {
 			return nil, err
 		}
@@ -102,7 +102,7 @@ func CommitsForYear(ctx context.Context, db *gorm.DB, user string, year int) (ma
 
 func CommitsForAllTime(ctx context.Context, db *gorm.DB, user string) (map[string]int64, error) {
 	var commits []*Commit
-	if result := db.Where("user = ?", user, year).Order("created_on desc").Find(&commits); result.Error != nil {
+	if result := db.Where("user = ?", user).Order("created_on desc").Find(&commits); result.Error != nil {
 		return nil, result.Error
 	}
 
