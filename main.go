@@ -93,10 +93,6 @@ func main() {
 	})
 	r.Use(crs.Handler)
 
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("hi."))
-	})
-
 	r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("hi."))
 	})
@@ -132,6 +128,9 @@ func main() {
 		}
 
 		csvWr := csv.NewWriter(w)
+		if err := csvWr.Write([]string{"date", "commits"}); err != nil {
+			log.Fatalw("error writing header to csv", zap.Error(err))
+		}
 		for d, v := range data {
 			if err := csvWr.Write([]string{d, strconv.FormatInt(v, 10)}); err != nil {
 				log.Fatalw("error writing record to csv", zap.Error(err))
@@ -164,6 +163,9 @@ func main() {
 		}
 
 		csvWr := csv.NewWriter(w)
+		if err := csvWr.Write([]string{"week", "commits"}); err != nil {
+			log.Fatalw("error writing header to csv", zap.Error(err))
+		}
 		for d, v := range data {
 			if err := csvWr.Write([]string{d, strconv.FormatInt(v, 10)}); err != nil {
 				log.Fatalw("error writing record to csv", zap.Error(err))
