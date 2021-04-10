@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	project = "relay"
+	project = "code"
 	gcpID   = "icco-cloud"
 )
 
@@ -90,6 +90,48 @@ func main() {
 	r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("hi."))
 	})
+
+  r.Post("/save", func(w http.ResponseWriter, r *http.Request) {
+    payload = JSON.parse(request.body.read).symbolize_keys
+
+    code.NewCommit(payload[:user], payload[:repo], payload[:sha], nil, true)
+  }
+
+  r.Get("/data/commit.csv" , func(w http.ResponseWriter, r *http.Request) {
+
+    data = Commit.order(:created_on).where(user: USER).where("created_on >= ?",
+                                                             Chronic.parse("2009-01-01")).group(:created_on).count
+
+    @stats = Hash.new(0)
+    data.each do |row|
+      @stats[row[0].strftime("%D")] += row[1]
+    end
+
+    etag "data/commit-#{Commit.maximum(:created_on)}"
+    content_type "text/csv"
+    erb :"commit_data.csv"
+  }
+
+ r.Get("/data/:year/weekly.csv" , func(w http.ResponseWriter, r *http.Request) {
+    @year = params[:year] || Time.now.year.to_s
+    logger.info "Getting data for #{@year}."
+
+    logger.info "USER is #{USER.inspect}."
+    data = Commit.order(:created_on).where(user: USER).group(:created_on).count
+
+    @stats = Hash.new(0)
+    ("01".."52").each { |week| @stats[week] = 0 }
+    data.each do |row|
+      if row[0].strftime("%Y") == @year
+        week = row[0].strftime("%U")
+        @stats[week] += row[1] if week != "00"
+      end
+    end
+
+    etag "data/weekly-#{@year}-#{Commit.maximum(:created_on)}"
+    content_type "text/csv"
+    erb :"weekly_data.csv"
+  }
 
 	h := &ochttp.Handler{
 		Handler:     r,
