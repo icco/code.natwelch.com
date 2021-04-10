@@ -14,7 +14,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	"github.com/hypnoglow/gormzap"
 	"github.com/icco/code.natwelch.com/code"
 	"github.com/icco/code.natwelch.com/static"
 	"github.com/icco/gutil/logging"
@@ -24,6 +23,7 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"moul.io/zapgorm2"
 )
 
 const (
@@ -65,12 +65,14 @@ func main() {
 		})
 	}
 
-	db, err := gorm.Open(postgres.Open(os.Getenv("DATABASE_URL")), &gorm.Config{})
+	zgl := zapgorm2.New(log.Desugar())
+	zgl.SetAsDefault()
+	db, err := gorm.Open(postgres.Open(os.Getenv("DATABASE_URL")), &gorm.Config{
+		Logger: zgl,
+	})
 	if err != nil {
 		log.Fatalw("cannot connect to database server", zap.Error(err))
 	}
-	db.LogMode(true)
-	db.SetLogger(gormzap.New(log))
 
 	if err := db.AutoMigrate(&code.Commit{}); err != nil {
 		log.Fatalw("cannot migrate Commit", zap.Error(err))

@@ -11,7 +11,6 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/go-github/v34 v34.0.0
 	github.com/google/go-querystring v1.1.0 // indirect
-	github.com/hypnoglow/gormzap v0.3.0
 	github.com/icco/gutil v0.0.0-20210403025205-f4d44dcca9ed
 	github.com/jackc/pgproto3/v2 v2.0.7 // indirect
 	github.com/jackc/pgx/v4 v4.11.0 // indirect
@@ -24,4 +23,5 @@ require (
 	google.golang.org/grpc v1.37.0 // indirect
 	gorm.io/driver/postgres v1.0.8
 	gorm.io/gorm v1.21.7
+	moul.io/zapgorm2 v1.0.3
 )
