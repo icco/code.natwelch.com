@@ -2,6 +2,7 @@ package code
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -21,6 +22,43 @@ type Commit struct {
 // String returns a string representation of a Commit.
 func (c *Commit) String() string {
 	return fmt.Sprintf("%s/%s#%s", c.User, c.Repo, c.SHA)
+}
+
+func (c *Commit) CheckAndSave(ctx context.Context, client *github.Client, db *gorm.DB) error {
+	if c.User == "" {
+		return fmt.Errorf("commit user cannot be empty")
+	}
+
+	if c.Repo == "" {
+		return fmt.Errorf("commit repo cannot be empty")
+	}
+
+	if c.SHA == "" {
+		return fmt.Errorf("commit SHA cannot be empty")
+	}
+
+	result := db.WithContext(ctx).Where("user = ? AND repo = ? AND sha = ?", c.User, c.Repo, c.SHA).First(c)
+	if err != nil {
+		if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return result.Error
+		}
+
+		if result := db.WithContext(ctx).Create(c); result.Error != nil {
+			return result.Error
+		}
+	}
+
+	if c.CreatedOn.Zero() {
+		cmt, _, err := client.Git.GetCommit(ctx, c.User, c.Repo, c.SHA)
+		if err != nil {
+			return err
+		}
+
+		c.CreatedOn = cmt.GetCommitter().GetDate()
+		c.User = cmt.GetCommitter().GetLogin()
+	}
+
+	return db.WithContext(ctx).Save(c)
 }
 
 func UserRepos(ctx context.Context, client *github.Client, user string) ([]*github.Repository, error) {
@@ -49,8 +87,8 @@ func UserRepos(ctx context.Context, client *github.Client, user string) ([]*gith
 
 func CommitsForYear(ctx context.Context, db *gorm.DB, user string, year int) (map[int]int64, error) {
 	var commits []*Commit
-	if err := db.Where("user = ? AND EXTRACT(YEAR FROM created_on) = ?", user, year).Order("created_on desc").Find(&commits); err != nil {
-		return nil, err
+	if result := db.Where("user = ? AND EXTRACT(YEAR FROM created_on) = ?", user, year).Order("created_on desc").Find(&commits); result.Error != nil {
+		return nil, result.Error
 	}
 
 	stats := map[int]int64{}
@@ -64,8 +102,8 @@ func CommitsForYear(ctx context.Context, db *gorm.DB, user string, year int) (ma
 
 func CommitsForAllTime(ctx context.Context, db *gorm.DB, user string) (map[string]int64, error) {
 	var commits []*Commit
-	if err := db.Where("user = ?", user, year).Order("created_on desc").Find(&commits); err != nil {
-		return nil, err
+	if result := db.Where("user = ?", user, year).Order("created_on desc").Find(&commits); result.Error != nil {
+		return nil, result.Error
 	}
 
 	stats := map[string]int64{}

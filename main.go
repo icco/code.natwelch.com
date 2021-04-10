@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -93,7 +94,20 @@ func main() {
 	})
 
 	r.Post("/save", func(w http.ResponseWriter, r *http.Request) {
-		code.NewCommit(payload[user], payload[repo], payload[sha], nil, true)
+		ctx := r.Context()
+		cmt := &code.Commit{}
+
+		if err := json.NewDecoder(r.Body).Decode(cmt); err != nil {
+			log.Errorw("could not decode json", zap.Error(err))
+			http.Error(w, "could not decode json")
+			return
+		}
+
+		if err := cmt.CheckAndSave(ctx, gh, db); err != nil {
+			log.Errorw("could not save", zap.Error(err))
+			http.Error(w, "could not save")
+			return
+		}
 	})
 
 	r.Get("/data/commit.csv", func(w http.ResponseWriter, r *http.Request) {
