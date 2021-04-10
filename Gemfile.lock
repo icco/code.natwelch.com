@@ -98,7 +98,7 @@ GEM
       sawyer (~> 0.8.0, >= 0.5.3)
     oj (3.11.3)
     os (1.1.1)
-    pg (0.21.0)
+    pg (1.2.3)
     public_suffix (4.0.6)
     rack (2.2.3)
     rack-protection (2.1.0)
@@ -151,7 +151,7 @@ DEPENDENCIES
   multi_json
   octokit
   oj
-  pg (~> 0.18)
+  pg (~> 1.0)
   rack-sassc (>= 0.1.0)
   rack_csrf (>= 2.6.0)
   rake
