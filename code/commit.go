@@ -1,6 +1,7 @@
-package main
+package code
 
 import (
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"

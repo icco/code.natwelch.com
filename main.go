@@ -63,7 +63,7 @@ func main() {
 		log.Fatalw("cannot connect to database server", zap.Error(err))
 	}
 
-	if err := db.AutoMigrate(&Commit{}); err != nil {
+	if err := db.AutoMigrate(&code.Commit{}); err != nil {
 		log.Fatalw("cannot migrate Commit", zap.Error(err))
 	}
 
