@@ -39,7 +39,7 @@ func (c *Commit) CheckAndSave(ctx context.Context, client *github.Client, db *go
 		return fmt.Errorf("commit SHA cannot be empty")
 	}
 
-	if result := db.WithContext(ctx).Where("user = ? AND repo = ? AND sha = ?", c.User, c.Repo, c.SHA).First(c); result.Error != nil {
+	if result := db.WithContext(ctx).Where("\"user\" = ? AND repo = ? AND sha = ?", c.User, c.Repo, c.SHA).First(c); result.Error != nil {
 		if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return result.Error
 		}
@@ -91,7 +91,7 @@ func UserRepos(ctx context.Context, client *github.Client, user string) ([]*gith
 // CommitsForYear gets all commits, grouped by week, for a year.
 func CommitsForYear(ctx context.Context, db *gorm.DB, user string, year int) (map[string]int64, error) {
 	var commits []*Commit
-	if result := db.Where("user = ? AND EXTRACT(YEAR FROM created_on) = ?", user, year).Order("created_on desc").Find(&commits); result.Error != nil {
+	if result := db.Where("\"user\" = ? AND EXTRACT(YEAR FROM created_on) = ?", user, year).Order("created_on desc").Find(&commits); result.Error != nil {
 		return nil, result.Error
 	}
 
@@ -106,7 +106,7 @@ func CommitsForYear(ctx context.Context, db *gorm.DB, user string, year int) (ma
 // CommitsForAllTime gets all commits ever, grouped by day.
 func CommitsForAllTime(ctx context.Context, db *gorm.DB, user string) (map[string]int64, error) {
 	var commits []*Commit
-	if result := db.Where("user = ?", user).Order("created_on desc").Find(&commits); result.Error != nil {
+	if result := db.Where("\"user\" = ?", user).Order("created_on desc").Find(&commits); result.Error != nil {
 		return nil, result.Error
 	}
 
