@@ -24,6 +24,7 @@ import (
 const (
 	project = "code"
 	gcpID   = "icco-cloud"
+	user    = "icco"
 )
 
 var (
@@ -91,47 +92,35 @@ func main() {
 		w.Write([]byte("hi."))
 	})
 
-  r.Post("/save", func(w http.ResponseWriter, r *http.Request) {
-    payload = JSON.parse(request.body.read).symbolize_keys
+	r.Post("/save", func(w http.ResponseWriter, r *http.Request) {
+		code.NewCommit(payload[user], payload[repo], payload[sha], nil, true)
+	})
 
-    code.NewCommit(payload[:user], payload[:repo], payload[:sha], nil, true)
-  }
+	r.Get("/data/commit.csv", func(w http.ResponseWriter, r *http.Request) {
+		data, err := code.CommitsForAllTime(r.Context(), db, user)
+		if err != nil {
+			log.Errorw("could not get commits", zap.Error(err))
+			http.Error(w, "could not get commits")
+			return
+		}
 
-  r.Get("/data/commit.csv" , func(w http.ResponseWriter, r *http.Request) {
+		erb("commit_data.csv")
+	})
 
-    data = Commit.order(:created_on).where(user: USER).where("created_on >= ?",
-                                                             Chronic.parse("2009-01-01")).group(:created_on).count
+	r.Get("/data/{year}/weekly.csv", func(w http.ResponseWriter, r *http.Request) {
+		year := chi.URLParam(r, "year")
+		log.Infow("getting data", "year", year, "user", user)
+		weeks, err := code.CommitsForYear(r.Context(), db, user, year)
+		if err != nil {
+			log.Errorw("could not get weekly commits", zap.Error(err))
+			http.Error(w, "could not get weekly commits")
+			return
+		}
 
-    @stats = Hash.new(0)
-    data.each do |row|
-      @stats[row[0].strftime("%D")] += row[1]
-    end
-
-    etag "data/commit-#{Commit.maximum(:created_on)}"
-    content_type "text/csv"
-    erb :"commit_data.csv"
-  }
-
- r.Get("/data/:year/weekly.csv" , func(w http.ResponseWriter, r *http.Request) {
-    @year = params[:year] || Time.now.year.to_s
-    logger.info "Getting data for #{@year}."
-
-    logger.info "USER is #{USER.inspect}."
-    data = Commit.order(:created_on).where(user: USER).group(:created_on).count
-
-    @stats = Hash.new(0)
-    ("01".."52").each { |week| @stats[week] = 0 }
-    data.each do |row|
-      if row[0].strftime("%Y") == @year
-        week = row[0].strftime("%U")
-        @stats[week] += row[1] if week != "00"
-      end
-    end
-
-    etag "data/weekly-#{@year}-#{Commit.maximum(:created_on)}"
-    content_type "text/csv"
-    erb :"weekly_data.csv"
-  }
+		etag("data/weekly-#{@year}-#{Commit.maximum(:created_on)}")
+		content_type("text/csv")
+		erb("weekly_data.csv")
+	})
 
 	h := &ochttp.Handler{
 		Handler:     r,
