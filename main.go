@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 
 	"contrib.go.opencensus.io/exporter/stackdriver"
@@ -127,19 +128,26 @@ func main() {
 			return
 		}
 
-		csvWr := csv.NewWriter(w)
-		if err := csvWr.Write([]string{"date", "commits"}); err != nil {
-			log.Fatalw("error writing header to csv", zap.Error(err))
-		}
+		records := [][]string{{"data", "commits"}}
 		for d, v := range data {
-			if err := csvWr.Write([]string{d, strconv.FormatInt(v, 10)}); err != nil {
-				log.Fatalw("error writing record to csv", zap.Error(err))
-			}
+			records = append(records, []string{d, strconv.FormatInt(v, 10)})
 		}
 
+		sort.Slice(records, func(i, j int) bool {
+			return records[i][0] < records[j][0]
+		})
+
+		csvWr := csv.NewWriter(w)
+		if err := csvWr.WriteAll(records); err != nil {
+			log.Errorw("error writing record to csv", zap.Error(err))
+			http.Error(w, "error writing record to csv", http.StatusInternalServerError)
+			return
+		}
 		csvWr.Flush()
 		if err := csvWr.Error(); err != nil {
 			log.Fatalw("csv error", zap.Error(err))
+			http.Error(w, "csv error", http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -162,19 +170,26 @@ func main() {
 			return
 		}
 
-		csvWr := csv.NewWriter(w)
-		if err := csvWr.Write([]string{"week", "commits"}); err != nil {
-			log.Fatalw("error writing header to csv", zap.Error(err))
-		}
+		records := [][]string{{"week", "commits"}}
 		for d, v := range data {
-			if err := csvWr.Write([]string{d, strconv.FormatInt(v, 10)}); err != nil {
-				log.Fatalw("error writing record to csv", zap.Error(err))
-			}
+			records = append(records, []string{d, strconv.FormatInt(v, 10)})
 		}
 
+		sort.Slice(records, func(i, j int) bool {
+			return records[i][0] < records[j][0]
+		})
+
+		csvWr := csv.NewWriter(w)
+		if err := csvWr.WriteAll(records); err != nil {
+			log.Errorw("error writing record to csv", zap.Error(err))
+			http.Error(w, "error writing record to csv", http.StatusInternalServerError)
+			return
+		}
 		csvWr.Flush()
 		if err := csvWr.Error(); err != nil {
 			log.Fatalw("csv error", zap.Error(err))
+			http.Error(w, "csv error", http.StatusInternalServerError)
+			return
 		}
 	})
 
