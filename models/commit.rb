@@ -1,7 +1,9 @@
-class Commit <  ActiveRecord::Base
-  validates :user, :presence => true
-  validates :repo, :presence => true
-  validates :sha, :presence => true, :uniqueness => {:scope => [:repo]}
+# frozen_string_literal: true
+
+class Commit < ActiveRecord::Base
+  validates :user, presence: true
+  validates :repo, presence: true
+  validates :sha, presence: true, uniqueness: { scope: [:repo] }
 
   def to_s
     "#{user}/#{repo}##{sha}"
@@ -11,49 +13,45 @@ class Commit <  ActiveRecord::Base
   # database and have the correct data.
   #
   # NOTE: This will probably blow out your github request quota.
-  def self.update_repo user, repo, client = nil, check = true
-    if client.nil?
-      client = Octokit::Client.new({})
-    end
+  def self.update_repo(user, repo, client = nil, check = true)
+    client = Octokit::Client.new({}) if client.nil?
 
-    commits = client.commits("#{user}/#{repo}").delete_if {|commit| commit.is_a? String }
-    commited_commits = Commit.where(:repo => repo).group(:repo).count.values.first.to_i
-    if check or commited_commits < commits.count
+    commits = client.commits("#{user}/#{repo}").delete_if { |commit| commit.is_a? String }
+    commited_commits = Commit.where(repo: repo).group(:repo).count.values.first.to_i
+    if check || (commited_commits < commits.count)
       logger.info "#{user}/#{repo} has #{commited_commits} commited commits, but needs #{commits.count}."
       commits.shuffle.each do |commit|
-        Commit.factory user, repo, commit['sha'], client, check
+        Commit.factory user, repo, commit["sha"], client, check
       end
-      commited_commits = Commit.where(:repo => repo).group(:repo).count.values.first.to_i
+      commited_commits = Commit.where(repo: repo).group(:repo).count.values.first.to_i
       logger.info "#{user}/#{repo} has #{commited_commits} commited commits, which is now enough (#{commits.count}). Done."
     else
       logger.info "#{user}/#{repo} has #{commited_commits} commited commits, which is enough (#{commits.count}). Skipping."
     end
 
-    return commited_commits
+    commited_commits
   end
 
   # This creates a Commit.
   #
   # NOTE: repo + sha are supposed to be unique, so if those two already exist,
   # but the user is wrong, we'll try and update (if check? is true).
-  def self.factory user, repo, sha, client = nil, check = false
-    if client.nil?
-      client = Octokit::Client.new({})
-    end
+  def self.factory(user, repo, sha, client = nil, check = false)
+    client = Octokit::Client.new({}) if client.nil?
 
-    commit = Commit.where(:repo => repo, :sha => sha).first_or_initialize
-    if !commit.new_record? and !commit.changed? and !check
+    commit = Commit.where(repo: repo, sha: sha).first_or_initialize
+    if !commit.new_record? && !commit.changed? && !check
       logger.push "#{user}/#{repo}##{sha} already exists as #{commit.inspect}.", :info
       # We return nil for better logging above.
       return nil
     end
 
     # No need to check.
-    if check and !commit.new_record? and commit.user.eql? user
-      return nil
-    end
+    return nil if check && !commit.new_record? && commit.user.eql?(user)
 
-    raise "Github ratelimit remaining #{client.ratelimit.remaining} of #{client.ratelimit.limit} is not enough." if client.ratelimit.remaining < 2
+    if client.ratelimit.remaining < 2
+      raise "Github ratelimit remaining #{client.ratelimit.remaining} of #{client.ratelimit.limit} is not enough."
+    end
 
     begin
       gh_commit = client.commit("#{user}/#{repo}", sha)
@@ -64,7 +62,7 @@ class Commit <  ActiveRecord::Base
       blob = gh_commit[:commit]
       if blob[:author]
         if blob[:author][:email]
-          found_user = self.lookup_user blob[:author][:email], client
+          found_user = lookup_user blob[:author][:email], client
           if !found_user.nil?
             commit.user = found_user
           else
@@ -78,7 +76,7 @@ class Commit <  ActiveRecord::Base
         if gh_commit.author.login
           commit.user = gh_commit.author.login
         elsif gh_commit.author.email
-          found_user = self.lookup_user gh_commit.author.email, client
+          found_user = lookup_user gh_commit.author.email, client
           if !found_user.nil?
             commit.user = found_user
           else
@@ -96,18 +94,18 @@ class Commit <  ActiveRecord::Base
       commit.sha = sha
 
       create_date = gh_commit.commit.author.date
-      if create_date.is_a? String
-        commit.created_on = DateTime.iso8601(create_date)
-      else
-        commit.created_on = create_date
-      end
+      commit.created_on = if create_date.is_a? String
+                            DateTime.iso8601(create_date)
+                          else
+                            create_date
+                          end
 
       if commit.valid?
         commit.save
-        return commit
+        commit
       else
         logger.push("Error Saving Commit #{user}/#{repo}:#{commit.sha}: #{commit.errors.messages.inspect}", :error)
-        return nil
+        nil
       end
     rescue Octokit::NotFound
       logger.push("Error Saving Commit #{user}/#{repo}:#{sha}: 404", :warn)
@@ -115,10 +113,8 @@ class Commit <  ActiveRecord::Base
   end
 
   # Lookup a user by email and return their username. Caches locally.
-  def self.lookup_user email, client = nil
-    if client.nil?
-      client = Octokit::Client.new({})
-    end
+  def self.lookup_user(email, client = nil)
+    client = Octokit::Client.new({}) if client.nil?
 
     # Shit isn't cached, do the API call (Ratelimit is 20 calls per minute).
     response = client.search_users email
@@ -130,6 +126,6 @@ class Commit <  ActiveRecord::Base
       user = response[:items][0][:login]
     end
 
-    return user
+    user
   end
 end
