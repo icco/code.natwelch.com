@@ -2,6 +2,39 @@
 USER = "icco"
 
 class Code < Sinatra::Base
+Google::Cloud.configure do |config|
+  config.trace.capture_stack = true
+  config.service_name = "code"
+end
+
+use Google::Cloud::Logging::Middleware
+use Google::Cloud::ErrorReporting::Middleware
+use Google::Cloud::Trace::Middleware
+
+logger = env["rack.logger"]
+ActiveRecord::Base.logger = logger
+ActiveRecord::Base.include_root_in_json = true
+ActiveRecord::Base.store_full_sti_class = true
+ActiveSupport.use_standard_json_time_format = true
+ActiveSupport.escape_html_entities_in_json = false
+ActiveRecord::Base.default_timezone = :utc
+
+# Now we can estabilish connection with our db
+url = URI(ENV['DATABASE_URL'])
+options = {
+  :host => url.host,
+  :port => url.port,
+  :database => url.path[1..-1],
+  :username => url.user,
+  :password => url.password,
+  :adapter => "postgresql",
+}
+
+# Log what we are connecting to.
+logger.debug " DB: #{options.inspect}"
+
+ActiveRecord::Base.establish_connection(options)
+
   use ConnectionPoolManagement
   enable :sessions
   register SassInitializer
