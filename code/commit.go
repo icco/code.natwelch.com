@@ -93,8 +93,7 @@ func CommitsForYear(ctx context.Context, db *gorm.DB, user string, year int) (ma
 
 	stats := map[int]int64{}
 	for _, c := range commits {
-		_, w := c.CreatedOn.ISOWeek()
-		stats[w]++
+		stats[c.CreatedOn.Format("2006-01-02")]++
 	}
 
 	return stats, nil

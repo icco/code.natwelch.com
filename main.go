@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 
 	"contrib.go.opencensus.io/exporter/stackdriver"
 	"contrib.go.opencensus.io/exporter/stackdriver/monitoredresource"
@@ -13,6 +15,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/icco/code.natwelch.com/code"
+	"github.com/icco/code.natwelch.com/static"
 	"github.com/icco/gutil/logging"
 	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/stats/view"
@@ -93,47 +96,79 @@ func main() {
 		w.Write([]byte("hi."))
 	})
 
+	r.Mount("/", http.FileServer(http.FS(static.Assets)))
+
 	r.Post("/save", func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		cmt := &code.Commit{}
 
 		if err := json.NewDecoder(r.Body).Decode(cmt); err != nil {
 			log.Errorw("could not decode json", zap.Error(err))
-			http.Error(w, "could not decode json")
+			http.Error(w, "could not decode json", http.StatusInternalServerError)
 			return
 		}
 
+		gh := code.GithubClient(ctx, os.Getenv("GITHUB_TOKEN"))
 		if err := cmt.CheckAndSave(ctx, gh, db); err != nil {
 			log.Errorw("could not save", zap.Error(err))
-			http.Error(w, "could not save")
+			http.Error(w, "could not save", http.StatusInternalServerError)
 			return
 		}
 	})
 
 	r.Get("/data/commit.csv", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("content-type", "text/csv")
+
 		data, err := code.CommitsForAllTime(r.Context(), db, user)
 		if err != nil {
 			log.Errorw("could not get commits", zap.Error(err))
-			http.Error(w, "could not get commits")
+			http.Error(w, "could not get commits", http.StatusInternalServerError)
 			return
 		}
 
-		erb("commit_data.csv")
+		csvWr := csv.NewWriter(w)
+		for d, v := range data {
+			if err := csvWr.Write([]string{d, strconv.Itoa(v)}); err != nil {
+				log.Fatalw("error writing record to csv", zap.Error(err))
+			}
+		}
+
+		csvWr.Flush()
+		if err := csvWr.Error(); err != nil {
+			log.Fatalw("csv error", zap.Error(err))
+		}
 	})
 
 	r.Get("/data/{year}/weekly.csv", func(w http.ResponseWriter, r *http.Request) {
-		year := chi.URLParam(r, "year")
+		w.Header().Set("content-type", "text/csv")
+
+		yearStr := chi.URLParam(r, "year")
+		year, err := strconv.Atoi(yearStr)
+		if err != nil {
+			log.Errorw("could not parse year", "year", yearStr, zap.Error(err))
+			http.Error(w, "could not parse year", http.StatusInternalServerError)
+			return
+		}
+
 		log.Infow("getting data", "year", year, "user", user)
 		weeks, err := code.CommitsForYear(r.Context(), db, user, year)
 		if err != nil {
 			log.Errorw("could not get weekly commits", zap.Error(err))
-			http.Error(w, "could not get weekly commits")
+			http.Error(w, "could not get weekly commits", http.StatusInternalServerError)
 			return
 		}
 
-		etag("data/weekly-#{@year}-#{Commit.maximum(:created_on)}")
-		content_type("text/csv")
-		erb("weekly_data.csv")
+		csvWr := csv.NewWriter(w)
+		for d, v := range data {
+			if err := csvWr.Write([]string{d, strconv.Itoa(v)}); err != nil {
+				log.Fatalw("error writing record to csv", zap.Error(err))
+			}
+		}
+
+		csvWr.Flush()
+		if err := csvWr.Error(); err != nil {
+			log.Fatalw("csv error", zap.Error(err))
+		}
 	})
 
 	h := &ochttp.Handler{
