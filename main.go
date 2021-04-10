@@ -16,6 +16,7 @@ import (
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/trace"
 	"go.uber.org/zap"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -57,11 +58,15 @@ func main() {
 		})
 	}
 
-	db, err := gorm.Open(os.Getenv("DATABASE_URL"), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(os.Getenv("DATABASE_URL")), &gorm.Config{})
 	if err != nil {
 		log.Fatalw("cannot connect to database server", zap.Error(err))
 	}
 	defer db.Close()
+
+	if err := db.AutoMigrate(&Commit{}); err != nil {
+		log.Fatalw("cannot migrate Commit", zap.Error(err))
+	}
 
 	r := chi.NewRouter()
 	r.Use(middleware.RealIP)
