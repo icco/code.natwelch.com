@@ -6,7 +6,9 @@ COPY . .
 ENV PORT 8080
 ENV RACK_ENV production
 
-RUN bundle install --system --without=test development
+RUN bundle config set --local system 'true'
+RUN bundle config set --local without 'test development'
+RUN bundle install
 
 CMD bundle exec thin -R config.ru start -p $PORT
 EXPOSE 8080
