@@ -1,4 +1,3 @@
-require "google/cloud/debugger"
 require "google/cloud/error_reporting"
 require "google/cloud/logging"
 require "google/cloud/trace"
@@ -16,7 +15,6 @@ class Code < Sinatra::Base
   enable :sessions
   register SassInitializer
 
-  use Google::Cloud::Debugger::Middleware
   use Google::Cloud::Logging::Middleware
   use Google::Cloud::ErrorReporting::Middleware
   use Google::Cloud::Trace::Middleware
