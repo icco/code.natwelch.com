@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Commit is our model.
 type Commit struct {
 	gorm.Model
 
@@ -24,6 +25,7 @@ func (c *Commit) String() string {
 	return fmt.Sprintf("%s/%s#%s", c.User, c.Repo, c.SHA)
 }
 
+// CheckAndSave upserts a commit. It updates date and user if they are missing.
 func (c *Commit) CheckAndSave(ctx context.Context, client *github.Client, db *gorm.DB) error {
 	if c.User == "" {
 		return fmt.Errorf("commit user cannot be empty")
@@ -61,6 +63,7 @@ func (c *Commit) CheckAndSave(ctx context.Context, client *github.Client, db *go
 	return result.Error
 }
 
+// UserRepos gets all of the repos for a user.
 func UserRepos(ctx context.Context, client *github.Client, user string) ([]*github.Repository, error) {
 	opts := &github.RepositoryListOptions{Type: "owner", Sort: "updated", Direction: "desc"}
 	repos, _, err := client.Repositories.List(ctx, user, opts)
@@ -85,6 +88,7 @@ func UserRepos(ctx context.Context, client *github.Client, user string) ([]*gith
 	return repos, nil
 }
 
+// CommitsForYear gets all commits, grouped by week, for a year.
 func CommitsForYear(ctx context.Context, db *gorm.DB, user string, year int) (map[string]int64, error) {
 	var commits []*Commit
 	if result := db.Where("user = ? AND EXTRACT(YEAR FROM created_on) = ?", user, year).Order("created_on desc").Find(&commits); result.Error != nil {
@@ -99,6 +103,7 @@ func CommitsForYear(ctx context.Context, db *gorm.DB, user string, year int) (ma
 	return stats, nil
 }
 
+// CommitsForAllTime gets all commits ever, grouped by day.
 func CommitsForAllTime(ctx context.Context, db *gorm.DB, user string) (map[string]int64, error) {
 	var commits []*Commit
 	if result := db.Where("user = ?", user).Order("created_on desc").Find(&commits); result.Error != nil {
