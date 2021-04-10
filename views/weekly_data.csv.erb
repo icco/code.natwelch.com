@@ -1,4 +1,0 @@
-week,commits
-<% @stats.each_pair do |week, entry| %>
-<%= Date.strptime("#{@year}-#{week}", "%Y-%U").strftime("%Y-%m-%d") %>,<%= entry %> 
-<% end %>

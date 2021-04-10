@@ -1,18 +1,14 @@
-From ruby:3.0.0
+FROM golang:1.16-alpine as builder
 
-WORKDIR /opt
+ENV GOPROXY="https://proxy.golang.org"
+ENV GO111MODULE="on"
+ENV NAT_ENV="production"
+ENV PRANA_LOG_FORMAT="json"
 
-ENV PORT 8080
-ENV RACK_ENV production
-EXPOSE 8080
+RUN apk add --no-cache git make g++ ca-certificates
 
-# Pin bundler
-RUN gem install bundler:2.2.16
-
+WORKDIR /go/src/github.com/icco/code.natwelch.com
 COPY . .
 
-RUN bundle config set --local system 'true'
-RUN bundle config set --local without 'test development'
-RUN bundle install
-
-CMD bundle exec thin -R config.ru start -p $PORT
+RUN go build -o /go/bin/code .
+CMD /go/bin/code
