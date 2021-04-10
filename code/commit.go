@@ -85,13 +85,13 @@ func UserRepos(ctx context.Context, client *github.Client, user string) ([]*gith
 	return repos, nil
 }
 
-func CommitsForYear(ctx context.Context, db *gorm.DB, user string, year int) (map[int]int64, error) {
+func CommitsForYear(ctx context.Context, db *gorm.DB, user string, year int) (map[string]int64, error) {
 	var commits []*Commit
 	if result := db.Where("user = ? AND EXTRACT(YEAR FROM created_on) = ?", user, year).Order("created_on desc").Find(&commits); result.Error != nil {
 		return nil, result.Error
 	}
 
-	stats := map[int]int64{}
+	stats := map[string]int64{}
 	for _, c := range commits {
 		stats[c.CreatedOn.Format("2006-01-02")]++
 	}

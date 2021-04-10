@@ -17,6 +17,7 @@ import (
 	"github.com/icco/code.natwelch.com/code"
 	"github.com/icco/code.natwelch.com/static"
 	"github.com/icco/gutil/logging"
+	"github.com/wantedly/gorm-zap"
 	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/trace"
@@ -68,6 +69,8 @@ func main() {
 	if err != nil {
 		log.Fatalw("cannot connect to database server", zap.Error(err))
 	}
+	db.LogMode(true)
+	db.SetLogger(gormzap.New(log))
 
 	if err := db.AutoMigrate(&code.Commit{}); err != nil {
 		log.Fatalw("cannot migrate Commit", zap.Error(err))
@@ -128,7 +131,7 @@ func main() {
 
 		csvWr := csv.NewWriter(w)
 		for d, v := range data {
-			if err := csvWr.Write([]string{d, strconv.Itoa(v)}); err != nil {
+			if err := csvWr.Write([]string{d, strconv.FormatInt(v, 10)}); err != nil {
 				log.Fatalw("error writing record to csv", zap.Error(err))
 			}
 		}
@@ -151,7 +154,7 @@ func main() {
 		}
 
 		log.Infow("getting data", "year", year, "user", user)
-		weeks, err := code.CommitsForYear(r.Context(), db, user, year)
+		data, err := code.CommitsForYear(r.Context(), db, user, year)
 		if err != nil {
 			log.Errorw("could not get weekly commits", zap.Error(err))
 			http.Error(w, "could not get weekly commits", http.StatusInternalServerError)
@@ -160,7 +163,7 @@ func main() {
 
 		csvWr := csv.NewWriter(w)
 		for d, v := range data {
-			if err := csvWr.Write([]string{d, strconv.Itoa(v)}); err != nil {
+			if err := csvWr.Write([]string{d, strconv.FormatInt(v, 10)}); err != nil {
 				log.Fatalw("error writing record to csv", zap.Error(err))
 			}
 		}
