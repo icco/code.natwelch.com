@@ -1,3 +1,8 @@
+require "google/cloud/debugger"
+require "google/cloud/error_reporting"
+require "google/cloud/logging"
+require "google/cloud/trace"
+
 # What user we care about.
 USER = "icco"
 
