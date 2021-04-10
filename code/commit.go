@@ -13,9 +13,9 @@ import (
 type Commit struct {
 	gorm.Model
 
-	Repo      string    `gorm:"index:idx_commit,unique",json:"repo"`
+	Repo      string    `gorm:"index:idx_commit,unique" json:"repo"`
 	User      string    `json:"user"`
-	SHA       string    `gorm:"index:idx_commit,unique",json:"sha"`
+	SHA       string    `gorm:"index:idx_commit,unique" json:"sha"`
 	CreatedOn time.Time `json:"created_on"`
 }
 
