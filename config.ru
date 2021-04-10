@@ -10,4 +10,8 @@ Dir[File.join(__dir__, 'models', '*.rb')].each { |file| require file }
 require File.dirname(__FILE__) + "/database.rb"
 require File.dirname(__FILE__) + "/main.rb"
 
+require "google/cloud/error_reporting"
+require "google/cloud/logging"
+require "google/cloud/trace"
+
 run Code
