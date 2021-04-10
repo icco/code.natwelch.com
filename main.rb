@@ -1,11 +1,20 @@
 # What user we care about.
 USER = "icco"
-logger = Logger.new(STDOUT)
+
+Google::Cloud.configure do |config|
+  config.trace.capture_stack = true
+  config.service_name = "code"
+end
 
 class Code < Sinatra::Base
   use ConnectionPoolManagement
   enable :sessions
   register SassInitializer
+
+  use Google::Cloud::Debugger::Middleware
+  use Google::Cloud::Logging::Middleware
+  use Google::Cloud::ErrorReporting::Middleware
+  use Google::Cloud::Trace::Middleware
 
   set :session_secret, ENV['SESSION_SECRET'] || 'blargh'
   set :protection, :except => :path_traversal

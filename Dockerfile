@@ -6,8 +6,12 @@ COPY . .
 ENV PORT 8080
 ENV RACK_ENV production
 
-RUN gem install bundler:1.17.3
-RUN bundle install --system --without=test development
+# Pin bundler
+RUN gem install bundler:2.2.16
+
+RUN bundle config set --local system 'true'
+RUN bundle config set --local without 'test development'
+RUN bundle install
 
 CMD bundle exec thin -R config.ru start -p $PORT
 EXPOSE 8080
