@@ -143,7 +143,7 @@ func main() {
 			http.Error(w, "error writing record to csv", http.StatusInternalServerError)
 			return
 		}
-		csvWr.Flush()
+
 		if err := csvWr.Error(); err != nil {
 			log.Fatalw("csv error", zap.Error(err))
 			http.Error(w, "csv error", http.StatusInternalServerError)
@@ -185,7 +185,7 @@ func main() {
 			http.Error(w, "error writing record to csv", http.StatusInternalServerError)
 			return
 		}
-		csvWr.Flush()
+
 		if err := csvWr.Error(); err != nil {
 			log.Fatalw("csv error", zap.Error(err))
 			http.Error(w, "csv error", http.StatusInternalServerError)
