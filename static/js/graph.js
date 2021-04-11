@@ -145,6 +145,6 @@ function drawWeeklyChart(color, year, element) {
       .attr("x", w - 6)
       .attr("y", m[0] - 12)
       .attr("text-anchor", "end")
-      .text("commits/week for " + year);
+      .text("commits/day for " + year);
   });
 }
