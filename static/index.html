@@ -10,16 +10,27 @@
     <article class="pa3 pa5-ns">
       <h1 class="f3 f1-m f-headline-l">Nat's Code</h1>
 
+      <div id="observablehq-chart-07e17cab"></div>
+
       <div id="observablehq-chart-5e896953"></div>
     </article>
 
     <footer class="black-80 pa3 pa5-ns">
       <p class="f6">
-        <span class="dib">A site by <a class="link black-90 hover-light-blue" href="https://natwelch.com">@icco</a></span> / 
+        <span class="dib">A site by <a class="link black-90 hover-light-blue" href="https://natwelch.com">@icco</a></span> /
         <a class="link black-90 hover-light-blue" href="https://github.com/icco/code.natwelch.com">Source</a> /
-        <a class="link black-90 hover-light-blue" href="https://observablehq.com/@icco/code-calendar-view">Data</a>
+        <a class="link black-90 hover-light-blue" href="https://observablehq.com/@icco/code">Graph Data</a> /
+        <a class="link black-90 hover-light-blue" href="https://observablehq.com/@icco/code-calendar-view">Calendar Data</a>
       </p>
     </footer>
+
+    <script type="module">
+      import {Runtime, Inspector} from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js";
+      import define from "https://api.observablehq.com/@icco/code.js?v=3";
+      new Runtime().module(define, name => {
+        if (name === "chart") return new Inspector(document.querySelector("#observablehq-chart-07e17cab"));
+      });
+    </script>
 
     <script type="module">
       import {Runtime, Inspector} from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js";
