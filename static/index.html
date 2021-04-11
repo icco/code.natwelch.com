@@ -4,15 +4,12 @@
     <title>Nat's Code History</title>
 
     <link rel="stylesheet" href="https://unpkg.com/tachyons@4.12.0/css/tachyons.min.css"/>
-    <link href="/css/style.css?v=20141229" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/css/style.css" media="screen" rel="stylesheet" type="text/css" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
   <body>
-    <div class="container">
-
-      <div class="page-header">
-        <h1>Nat's Code</h1>
-      </div>
+    <article class="pa3 pa5-ns">
+      <h1 class="f3 f1-m f-headline-l">Nat's Code</h1>
 
       <!-- #ff7f0e #2ca02c #d62728 -->
       <div class="area-chart chart" id="commits"     data-color="#1F77B4"></div>
@@ -31,22 +28,17 @@
       <div class="year-chart chart" data-year="2010" data-color="#BCBD22"></div>
       <div class="year-chart chart" data-year="2009" data-color="#17BECF"></div>
 
-      <div class="footer">
-        <p class="muted">a site by <a href="http://github.com/icco">@icco</a>.</p>
-      </div>
-    </div>
+    </article>
 
-    <script src="/js/jquery.min.js"></script>
-    <script src="/js/d3.v3.min.js" charset="utf-8"></script>
-    <script src="/js/graph.js?v=20210410"></script>
+    <footer class="black-80 pa3 pa5-ns">
+      <p class="f6">
+        <span class="dib">A site by <a class="link black-80 hover-light-blue" href="https://natwelch.com">@icco</a>.</span> / 
+        <a class="link black-80 hover-light-blue" href="https://github.com/icco/code.natwelch.com">Source</a>
+      </p>
+    </footer>
+
+    <script src="https://d3js.org/d3.v6.min.js"></script>
     <script type="text/javascript">
-      $(document).ready(function() {
-        // Draw commits per day chart
-        drawCommitChart($('#commits').attr('data-color'));
-
-        // Draw year charts
-        $('.year-chart').each(function(i, el) { drawWeeklyChart($(el).attr('data-color'), $(el).attr('data-year'), el); });
-      });
     </script>
   </body>
 </html>
