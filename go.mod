@@ -11,7 +11,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/go-github/v34 v34.0.0
 	github.com/google/go-querystring v1.1.0 // indirect
-	github.com/icco/gutil v0.0.0-20210403025205-f4d44dcca9ed
+	github.com/icco/gutil v0.0.0-20210411011308-d24e8e69d3e6
 	github.com/jackc/pgproto3/v2 v2.0.7 // indirect
 	github.com/jackc/pgx/v4 v4.11.0 // indirect
 	go.opencensus.io v0.23.0

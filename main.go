@@ -17,6 +17,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/icco/code.natwelch.com/code"
 	"github.com/icco/code.natwelch.com/static"
+	"github.com/icco/gutil/etag"
 	"github.com/icco/gutil/logging"
 	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/stats/view"
@@ -80,6 +81,7 @@ func main() {
 	}
 
 	r := chi.NewRouter()
+	r.Use(etag.Handler(false))
 	r.Use(middleware.RealIP)
 	r.Use(logging.Middleware(log.Desugar(), gcpID))
 
