@@ -128,7 +128,7 @@ func main() {
 			return
 		}
 
-		records := [][]string{{"data", "commits"}}
+		var records [][]string
 		for d, v := range data {
 			records = append(records, []string{d, strconv.FormatInt(v, 10)})
 		}
@@ -138,6 +138,9 @@ func main() {
 		})
 
 		csvWr := csv.NewWriter(w)
+		if err := csvWr.Write([]string{"date", "commits"}); err != nil {
+			log.Fatalw("error writing header to csv", zap.Error(err))
+		}
 		if err := csvWr.WriteAll(records); err != nil {
 			log.Errorw("error writing record to csv", zap.Error(err))
 			http.Error(w, "error writing record to csv", http.StatusInternalServerError)
@@ -170,7 +173,7 @@ func main() {
 			return
 		}
 
-		records := [][]string{{"week", "commits"}}
+		var records [][]string
 		for d, v := range data {
 			records = append(records, []string{d, strconv.FormatInt(v, 10)})
 		}
@@ -180,6 +183,9 @@ func main() {
 		})
 
 		csvWr := csv.NewWriter(w)
+		if err := csvWr.Write([]string{"week", "commits"}); err != nil {
+			log.Fatalw("error writing header to csv", zap.Error(err))
+		}
 		if err := csvWr.WriteAll(records); err != nil {
 			log.Errorw("error writing record to csv", zap.Error(err))
 			http.Error(w, "error writing record to csv", http.StatusInternalServerError)
