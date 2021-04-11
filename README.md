@@ -1,14 +1,3 @@
 # code.natwelch.com
 
-This should show my contributions to software overtime.
-
-## Desired Graphs
-
- * Watchers over time
- * Forks over time
- * Repositories over time
- * commits per day
-
-## Notes
-
- * http://stackoverflow.com/questions/8301531/dealing-with-dates-on-d3-js-axis
+This shows my contributions to software overtime. This app uses Go to serve the data. To see the scraper, see github.com/icco/cron. To visualize the data, I'm embedding cells from https://observablehq.com.
