@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/go-github/v34/github"
+	"github.com/google/go-github/v37/github"
 	"gorm.io/gorm"
 )
 
