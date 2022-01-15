@@ -9,7 +9,7 @@ require (
 	github.com/go-chi/cors v1.2.0
 	github.com/google/go-github/v37 v37.0.0
 	github.com/google/go-querystring v1.1.0 // indirect
-	github.com/icco/gutil v0.0.0-20220115163816-b7b82159b0b6
+	github.com/icco/gutil v0.0.0-20220115170613-a57da700978e
 	github.com/jackc/pgx/v4 v4.14.1 // indirect
 	go.opencensus.io v0.23.0
 	go.uber.org/zap v1.20.0
