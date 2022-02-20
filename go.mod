@@ -4,9 +4,7 @@ go 1.16
 
 require (
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.10
-	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v1.0.0-RC1.0.20220111155622-771af0772772 // indirect
 	github.com/aws/aws-sdk-go v1.42.35 // indirect
-	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-chi/cors v1.2.0
 	github.com/google/go-github/v37 v37.0.0
