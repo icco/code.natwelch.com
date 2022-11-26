@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
@@ -24,16 +25,17 @@ import (
 )
 
 const (
-	project = "code"
-	gcpID   = "icco-cloud"
+	service = "code"
+	project = "icco-cloud"
 	user    = "icco"
 )
 
 var (
-	log = logging.Must(logging.NewLogger(project))
+	log = logging.Must(logging.NewLogger(service))
 )
 
 func main() {
+	ctx := context.Background()
 	port := "8080"
 	if fromEnv := os.Getenv("PORT"); fromEnv != "" {
 		port = fromEnv
@@ -60,7 +62,7 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(etag.Handler(false))
 	r.Use(middleware.RealIP)
-	r.Use(logging.Middleware(log.Desugar(), gcpID))
+	r.Use(logging.Middleware(log.Desugar(), project))
 	r.Use(otel.Middleware)
 
 	crs := cors.New(cors.Options{
