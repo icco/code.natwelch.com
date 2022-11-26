@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
@@ -9,9 +10,6 @@ import (
 	"sort"
 	"strconv"
 
-	"contrib.go.opencensus.io/exporter/stackdriver"
-	"contrib.go.opencensus.io/exporter/stackdriver/monitoredresource"
-	"contrib.go.opencensus.io/exporter/stackdriver/propagation"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -19,9 +17,7 @@ import (
 	"github.com/icco/code.natwelch.com/static"
 	"github.com/icco/gutil/etag"
 	"github.com/icco/gutil/logging"
-	"go.opencensus.io/plugin/ochttp"
-	"go.opencensus.io/stats/view"
-	"go.opencensus.io/trace"
+	"github.com/icco/gutil/otel"
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -29,42 +25,25 @@ import (
 )
 
 const (
-	project = "code"
-	gcpID   = "icco-cloud"
+	service = "code"
+	project = "icco-cloud"
 	user    = "icco"
 )
 
 var (
-	log = logging.Must(logging.NewLogger(project))
+	log = logging.Must(logging.NewLogger(service))
 )
 
 func main() {
+	ctx := context.Background()
 	port := "8080"
 	if fromEnv := os.Getenv("PORT"); fromEnv != "" {
 		port = fromEnv
 	}
 	log.Infow("Starting up", "host", fmt.Sprintf("http://localhost:%s", port))
 
-	if os.Getenv("ENABLE_STACKDRIVER") != "" {
-		labels := &stackdriver.Labels{}
-		labels.Set("app", project, "The name of the current app.")
-		sd, err := stackdriver.NewExporter(stackdriver.Options{
-			ProjectID:               gcpID,
-			MonitoredResource:       monitoredresource.Autodetect(),
-			DefaultMonitoringLabels: labels,
-			DefaultTraceAttributes:  map[string]interface{}{"app": project},
-		})
-
-		if err != nil {
-			log.Fatalw("failed to create the stackdriver exporter", zap.Error(err))
-		}
-		defer sd.Flush()
-
-		view.RegisterExporter(sd)
-		trace.RegisterExporter(sd)
-		trace.ApplyConfig(trace.Config{
-			DefaultSampler: trace.AlwaysSample(),
-		})
+	if err := otel.Init(ctx, log, project, service); err != nil {
+		log.Errorw("could not init opentelemetry", zap.Error(err))
 	}
 
 	zgl := zapgorm2.New(log.Desugar())
@@ -83,7 +62,8 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(etag.Handler(false))
 	r.Use(middleware.RealIP)
-	r.Use(logging.Middleware(log.Desugar(), gcpID))
+	r.Use(logging.Middleware(log.Desugar(), project))
+	r.Use(otel.Middleware)
 
 	crs := cors.New(cors.Options{
 		AllowCredentials:   true,
@@ -201,16 +181,5 @@ func main() {
 		}
 	})
 
-	h := &ochttp.Handler{
-		Handler:     r,
-		Propagation: &propagation.HTTPFormat{},
-	}
-	if err := view.Register([]*view.View{
-		ochttp.ServerRequestCountView,
-		ochttp.ServerResponseCountByStatusCode,
-	}...); err != nil {
-		log.Fatalw("Failed to register ochttp views", zap.Error(err))
-	}
-
-	log.Fatal(http.ListenAndServe(":"+port, h))
+	log.Fatal(http.ListenAndServe(":"+port, r))
 }
