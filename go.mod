@@ -6,7 +6,7 @@ require (
 	github.com/go-chi/chi/v5 v5.0.11
 	github.com/go-chi/cors v1.2.1
 	github.com/google/go-github/v37 v37.0.0
-	github.com/icco/gutil v0.0.0-20230625151348-40045bf190da
+	github.com/icco/gutil v0.0.0-20231225205306-8491d9f0d3f7
 	go.uber.org/zap v1.26.0
 	golang.org/x/oauth2 v0.15.0
 	gorm.io/driver/postgres v1.5.4

@@ -27,8 +27,8 @@ github.com/google/go-querystring v1.0.0/go.mod h1:odCYkC5MyYFN7vkCjXpyrEuKhc/BUO
 github.com/google/go-querystring v1.1.0 h1:AnCroh3fv4ZBgVIf1Iwtovgjaw/GiKJo8M8yD/fhyJ8=
 github.com/google/go-querystring v1.1.0/go.mod h1:Kcdr2DB4koayq7X8pmAG4sNG59So17icRSOU623lUBU=
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
-github.com/icco/gutil v0.0.0-20230625151348-40045bf190da h1:+VMA1AFZzvYnk3hTYn9tRnFiosfnT/ljLbGy4uAco7E=
-github.com/icco/gutil v0.0.0-20230625151348-40045bf190da/go.mod h1:n6kEtyQ+p6f/ACGdCXw4fHcBMnmjDvBV6sCt3GHccio=
+github.com/icco/gutil v0.0.0-20231225205306-8491d9f0d3f7 h1:kQIdS5As8P6lEG3xZqERKHbO9wnYZk5JQmP7whx+ZNI=
+github.com/icco/gutil v0.0.0-20231225205306-8491d9f0d3f7/go.mod h1:67ZPs0JW1qmJ4x0YtxdrRng/SBPuJkFGtTGZlCKZ+XY=
 github.com/icco/zapdriver v1.4.0 h1:ACpofOtnSJT9eywNOoTuEhzo7YtFUGCc4xBXYFWYMkI=
 github.com/icco/zapdriver v1.4.0/go.mod h1:M9vTLsSlL3ciV1RK6uK9O/0zAdqNNIZ3n74qdCHvAl8=
 github.com/jackc/pgpassfile v1.0.0 h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=
