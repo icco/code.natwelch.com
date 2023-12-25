@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
@@ -17,7 +16,6 @@ import (
 	"github.com/icco/code.natwelch.com/static"
 	"github.com/icco/gutil/etag"
 	"github.com/icco/gutil/logging"
-	"github.com/icco/gutil/otel"
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -35,16 +33,11 @@ var (
 )
 
 func main() {
-	ctx := context.Background()
 	port := "8080"
 	if fromEnv := os.Getenv("PORT"); fromEnv != "" {
 		port = fromEnv
 	}
 	log.Infow("Starting up", "host", fmt.Sprintf("http://localhost:%s", port))
-
-	if err := otel.Init(ctx, log, project, service); err != nil {
-		log.Errorw("could not init opentelemetry", zap.Error(err))
-	}
 
 	zgl := zapgorm2.New(log.Desugar())
 	zgl.SetAsDefault()
@@ -63,7 +56,6 @@ func main() {
 	r.Use(etag.Handler(false))
 	r.Use(middleware.RealIP)
 	r.Use(logging.Middleware(log.Desugar(), project))
-	r.Use(otel.Middleware)
 
 	crs := cors.New(cors.Options{
 		AllowCredentials:   true,
