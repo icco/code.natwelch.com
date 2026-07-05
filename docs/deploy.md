@@ -29,8 +29,12 @@ Create a token and set it on the host:
 - Include **private**-repo contributions: add `repo`, and enable
   *Settings → Profile → "Include private contributions on my profile"* on GitHub.
 
-Set the real value in `icco.me/mist/docker-compose.yml` (or a host env/secret),
-then `docker compose up -d code`. Do not commit the real token.
+Provide the real value via a host env file / secret referenced by the compose
+service (not committed) — e.g. a `.env` on the host or your secret manager —
+then `docker compose up -d code`. Avoid pasting the real token directly into the
+tracked `icco.me/mist/docker-compose.yml`; if you do edit that file, keep the
+placeholder in git and inject the real value at deploy time. Never commit the
+real token.
 
 ## 3. Security note (action item, not in this repo)
 
@@ -47,4 +51,5 @@ curl -sf https://code.natwelch.com/metrics | grep code_
 curl -sf https://code.natwelch.com/data/contributions.csv | head
 ```
 `code_last_sync_timestamp_seconds` should advance after the first sync window;
-the CSV gains rows once backfill runs (minutes, given the token).
+the CSV gains rows once the backfill runs (the first full backfill can take a
+while depending on GitHub API rate limits).
