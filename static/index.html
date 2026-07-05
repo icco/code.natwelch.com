@@ -1,43 +1,28 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <meta charset="utf-8" />
     <title>Nat's Code History</title>
-
-    <link rel="stylesheet" href="https://unpkg.com/tachyons@4.12.0/css/tachyons.min.css"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://unpkg.com/tachyons@4.12.0/css/tachyons.min.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      .cell { shape-rendering: crispEdges; }
+      .yr { font: 12px system-ui, sans-serif; fill: #57606a; }
+    </style>
   </head>
   <body>
     <article class="pa3 pa5-ns">
       <h1 class="f3 f1-m f-headline-l">Nat's Code</h1>
-
-      <div id="observablehq-chart-07e17cab"></div>
-
-      <div id="observablehq-chart-5e896953"></div>
+      <p class="f6 measure">Daily commit contributions across public GitHub repositories, refreshed from GitHub's API.</p>
+      <div id="chart" class="mt3">Loading…</div>
     </article>
-
     <footer class="black-80 pa3 pa5-ns">
       <p class="f6">
         <span class="dib">A site by <a class="link black-90 hover-light-blue" href="https://natwelch.com">@icco</a></span> /
         <a class="link black-90 hover-light-blue" href="https://github.com/icco/code.natwelch.com">Source</a> /
-        <a class="link black-90 hover-light-blue" href="https://observablehq.com/@icco/code">Graph Data</a> /
-        <a class="link black-90 hover-light-blue" href="https://observablehq.com/@icco/code-calendar-view">Calendar Data</a>
+        <a class="link black-90 hover-light-blue" href="/data/contributions.csv">Data</a>
       </p>
     </footer>
-
-    <script type="module">
-      import {Runtime, Inspector} from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js";
-      import define from "https://api.observablehq.com/@icco/code.js?v=3";
-      new Runtime().module(define, name => {
-        if (name === "chart") return new Inspector(document.querySelector("#observablehq-chart-07e17cab"));
-      });
-    </script>
-
-    <script type="module">
-      import {Runtime, Inspector} from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js";
-      import define from "https://api.observablehq.com/@icco/code-calendar-view.js?v=3";
-      new Runtime().module(define, name => {
-        if (name === "chart") return new Inspector(document.querySelector("#observablehq-chart-5e896953"));
-      });
-    </script>
+    <script type="module" src="/app.js"></script>
   </body>
 </html>
