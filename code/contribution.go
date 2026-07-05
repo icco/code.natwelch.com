@@ -59,6 +59,33 @@ func ForYear(ctx context.Context, db *gorm.DB, user string, year int) (map[strin
 	return out, nil
 }
 
+// YearsWithData returns the set of calendar years that already have rows for
+// the user, so backfill can skip years it has already fetched.
+func YearsWithData(ctx context.Context, db *gorm.DB, user string) (map[int]bool, error) {
+	var years []int
+	if err := db.WithContext(ctx).Model(&Contribution{}).
+		Where(`"user" = ?`, user).
+		Pluck("DISTINCT CAST(EXTRACT(YEAR FROM date) AS INTEGER)", &years).Error; err != nil {
+		return nil, err
+	}
+	out := make(map[int]bool, len(years))
+	for _, y := range years {
+		out[y] = true
+	}
+	return out, nil
+}
+
+// TotalCount returns the sum of all commit counts stored for the user.
+func TotalCount(ctx context.Context, db *gorm.DB, user string) (int64, error) {
+	var total int64
+	if err := db.WithContext(ctx).Model(&Contribution{}).
+		Where(`"user" = ?`, user).
+		Select("COALESCE(SUM(count), 0)").Scan(&total).Error; err != nil {
+		return 0, err
+	}
+	return total, nil
+}
+
 func weekKey(t time.Time) string {
 	y, w := t.ISOWeek()
 	return fmt.Sprintf("%04d-W%02d", y, w)

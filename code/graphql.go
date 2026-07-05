@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -13,6 +14,10 @@ import (
 
 // graphqlURL is a var so tests can point it at httptest.
 var graphqlURL = "https://api.github.com/graphql"
+
+// httpClient bounds every GitHub call so a stalled connection can't wedge the
+// sync loop indefinitely.
+var httpClient = &http.Client{Timeout: 30 * time.Second}
 
 const contribQuery = `query($login:String!,$from:DateTime!,$to:DateTime!){
   user(login:$login){
@@ -51,7 +56,7 @@ type contribResponse struct {
 }
 
 // FetchCommitContributions returns day("2006-01-02") -> commit count for a
-// single window (keep windows <= ~3 months so first:100 never truncates).
+// single window (keep windows <= ~1 month so first:100 never truncates).
 func FetchCommitContributions(ctx context.Context, log *zap.SugaredLogger, token, user string, from, to time.Time) (map[string]int, error) {
 	reqBody, err := json.Marshal(map[string]any{
 		"query": contribQuery,
@@ -72,14 +77,16 @@ func FetchCommitContributions(ctx context.Context, log *zap.SugaredLogger, token
 	req.Header.Set("Authorization", "bearer "+token)
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("graphql request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("graphql status %d", resp.StatusCode)
+		// GitHub puts the actionable detail (bad token, RATE_LIMITED) in the body.
+		snippet, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
+		return nil, fmt.Errorf("graphql status %d: %s", resp.StatusCode, bytes.TrimSpace(snippet))
 	}
 
 	var parsed contribResponse
