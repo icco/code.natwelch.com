@@ -26,7 +26,8 @@ function yearSVG(year, counts) {
   for (const [d, c] of counts) if (d.startsWith(String(year))) max = Math.max(max, c);
 
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  const weeks = 53;
+  const daysInYear = Math.round((Date.UTC(year + 1, 0, 1) - Date.UTC(year, 0, 1)) / 86400000);
+  const weeks = Math.ceil((dayOfWeek(start) + daysInYear) / 7);
   svg.setAttribute("width", PAD + weeks * WEEK);
   svg.setAttribute("height", PAD + 7 * WEEK + 8);
   svg.setAttribute("role", "img");
@@ -66,6 +67,7 @@ async function main() {
   const chart = document.getElementById("chart");
   try {
     const res = await fetch("/data/contributions.csv");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const counts = parseCSV(await res.text());
     if (counts.size === 0) {
       chart.textContent = "No contribution data yet — the sync is still populating.";
