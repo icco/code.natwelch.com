@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus/testutil"
 	"go.uber.org/zap"
 )
 
@@ -82,5 +83,53 @@ func TestFetchCommitContributionsAggregates(t *testing.T) {
 	}
 	if got["2024-03-01"] != 5 || got["2024-03-02"] != 1 {
 		t.Errorf("aggregation wrong: %v", got)
+	}
+}
+
+// fetchPayload serves a fixed GraphQL body and runs one FetchCommitContributions.
+func fetchPayload(t *testing.T, payload string) map[string]int {
+	t.Helper()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(payload))
+	}))
+	defer srv.Close()
+
+	old := graphqlURL
+	graphqlURL = srv.URL
+	defer func() { graphqlURL = old }()
+
+	from := time.Date(2024, 3, 1, 0, 0, 0, 0, time.UTC)
+	got, err := FetchCommitContributions(context.Background(), zap.NewNop().Sugar(), "tkn", "icco", from, from.AddDate(0, 1, 0))
+	if err != nil {
+		t.Fatalf("fetch: %v", err)
+	}
+	return got
+}
+
+func TestFetchCommitContributionsPrivateVisibility(t *testing.T) {
+	// A private repo in the itemized list is counted and marks the token healthy.
+	got := fetchPayload(t, `{"data":{"user":{"contributionsCollection":{
+	  "restrictedContributionsCount":0,
+	  "commitContributionsByRepository":[
+	    {"repository":{"isPrivate":true},"contributions":{"nodes":[
+	      {"occurredAt":"2024-03-01T00:00:00Z","commitCount":4}],"pageInfo":{"hasNextPage":false}}}
+	  ]}}}}`)
+	if got["2024-03-01"] != 4 {
+		t.Errorf("private commit not aggregated: %v", got)
+	}
+	if v := testutil.ToFloat64(MetricPrivateVisible); v != 1 {
+		t.Errorf("private commits itemized: want visible=1, got %v", v)
+	}
+
+	// Restricted activity with no itemized private commits => dropped => 0.
+	fetchPayload(t, `{"data":{"user":{"contributionsCollection":{
+	  "restrictedContributionsCount":7,
+	  "commitContributionsByRepository":[
+	    {"repository":{"isPrivate":false},"contributions":{"nodes":[
+	      {"occurredAt":"2024-03-01T00:00:00Z","commitCount":2}],"pageInfo":{"hasNextPage":false}}}
+	  ]}}}}`)
+	if v := testutil.ToFloat64(MetricPrivateVisible); v != 0 {
+		t.Errorf("restricted-but-none-itemized: want visible=0, got %v", v)
 	}
 }

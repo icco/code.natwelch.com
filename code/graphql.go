@@ -19,10 +19,16 @@ var graphqlURL = "https://api.github.com/graphql"
 // sync loop indefinitely.
 var httpClient = &http.Client{Timeout: 30 * time.Second}
 
+// restrictedContributionsCount and repository.isPrivate are the safety net for
+// private commits: a repo-scoped classic PAT viewing its own account itemizes
+// private repos here directly (isPrivate:true), so a nonzero restricted count
+// with zero itemized private commits means the token can't read private repos.
 const contribQuery = `query($login:String!,$from:DateTime!,$to:DateTime!){
   user(login:$login){
     contributionsCollection(from:$from,to:$to){
+      restrictedContributionsCount
       commitContributionsByRepository(maxRepositories:100){
+        repository{ isPrivate }
         contributions(first:100){
           nodes{ occurredAt commitCount }
           pageInfo{ hasNextPage }
@@ -36,7 +42,11 @@ type contribResponse struct {
 	Data struct {
 		User struct {
 			ContributionsCollection struct {
+				RestrictedContributionsCount    int `json:"restrictedContributionsCount"`
 				CommitContributionsByRepository []struct {
+					Repository struct {
+						IsPrivate bool `json:"isPrivate"`
+					} `json:"repository"`
 					Contributions struct {
 						Nodes []struct {
 							OccurredAt  time.Time `json:"occurredAt"`
@@ -97,18 +107,46 @@ func FetchCommitContributions(ctx context.Context, log *zap.SugaredLogger, token
 		return nil, fmt.Errorf("graphql error: %s", parsed.Errors[0].Message)
 	}
 
-	repos := parsed.Data.User.ContributionsCollection.CommitContributionsByRepository
+	cc := parsed.Data.User.ContributionsCollection
+	repos := cc.CommitContributionsByRepository
 	if len(repos) >= 100 {
 		log.Warnw("commitContributionsByRepository hit maxRepositories cap; some repos may be omitted", "from", from, "to", to)
 	}
 
 	out := map[string]int{}
+	var publicCommits, privateCommits int
 	for _, repo := range repos {
 		if repo.Contributions.PageInfo.HasNextPage {
 			log.Warnw("commit contributions truncated for window; narrow it", "from", from, "to", to)
 		}
 		for _, n := range repo.Contributions.Nodes {
 			out[n.OccurredAt.UTC().Format("2006-01-02")] += n.CommitCount
+			if repo.Repository.IsPrivate {
+				privateCommits += n.CommitCount
+			} else {
+				publicCommits += n.CommitCount
+			}
+		}
+	}
+
+	// Private-visibility safety net. A repo-scoped token viewing its own
+	// account should itemize private commits directly (isPrivate:true). If
+	// GitHub instead reports private activity only as an anonymized restricted
+	// count while the itemized list surfaced no private commits, the token
+	// almost certainly can't read private repos (use a classic PAT with the
+	// `repo` scope) or the profile setting is off — either way private commits
+	// are being silently dropped from the heatmap. restrictedContributionsCount
+	// spans all contribution types, so this can false-positive on a window with
+	// only private issues/PRs; it stays a warning, not an error.
+	if cc.RestrictedContributionsCount > 0 && privateCommits == 0 {
+		MetricPrivateVisible.Set(0)
+		log.Warnw("private commits not surfaced: GitHub reports restricted contributions the itemized query returned none of",
+			"restricted", cc.RestrictedContributionsCount, "public_commits", publicCommits, "from", from, "to", to,
+			"hint", "use a classic PAT with 'repo' scope and enable Settings→Profile→'Include private contributions on my profile'")
+	} else {
+		MetricPrivateVisible.Set(1)
+		if privateCommits > 0 {
+			log.Infow("private commits captured", "private", privateCommits, "public", publicCommits, "from", from, "to", to)
 		}
 	}
 	return out, nil
