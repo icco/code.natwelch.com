@@ -21,4 +21,9 @@ var (
 		Name: "code_contributions_total",
 		Help: "Commit total observed during the most recent full backfill.",
 	})
+	// MetricPrivateVisible is 0 when private commits are being dropped. Alert on == 0.
+	MetricPrivateVisible = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "code_private_commits_visible",
+		Help: "0 if GitHub reports restricted contributions the itemized query missed (token scope / profile setting); else 1.",
+	})
 )

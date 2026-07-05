@@ -26,6 +26,7 @@ func RunSync(ctx context.Context, log *zap.SugaredLogger, db *gorm.DB, opts Sync
 	}
 
 	log.Infow("starting contribution sync", "user", opts.User, "interval", opts.Interval, "start_year", opts.StartYear)
+	MetricPrivateVisible.Set(1) // healthy until a window says otherwise
 	backfill(ctx, log, db, opts)
 	refresh(ctx, log, db, opts) // ensure recent data is current on boot
 
