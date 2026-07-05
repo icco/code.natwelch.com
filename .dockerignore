@@ -1,3 +1,6 @@
-*.sql.gz
 .git
-
+.github
+.superpowers
+bin
+docs
+*.md
