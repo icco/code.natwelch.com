@@ -5,11 +5,9 @@ go 1.25.0
 require (
 	github.com/go-chi/chi/v5 v5.2.4
 	github.com/go-chi/cors v1.2.1
-	github.com/google/go-github/v37 v37.0.0
 	github.com/icco/gutil v0.0.0-20231225205306-8491d9f0d3f7
 	github.com/prometheus/client_golang v1.23.2
 	go.uber.org/zap v1.26.0
-	golang.org/x/oauth2 v0.30.0
 	gorm.io/driver/postgres v1.5.4
 	gorm.io/gorm v1.25.5
 	moul.io/zapgorm2 v1.3.0
@@ -20,7 +18,6 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/go-http-utils/fresh v0.0.0-20161124030543-7231e26a4b27 // indirect
 	github.com/go-http-utils/headers v0.0.0-20181008091004-fed159eddc2a // indirect
-	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/icco/zapdriver v1.4.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
@@ -34,7 +31,6 @@ require (
 	github.com/prometheus/procfs v0.16.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
-	golang.org/x/crypto v0.45.0 // indirect
 	golang.org/x/sync v0.18.0 // indirect
 	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
