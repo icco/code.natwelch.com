@@ -24,19 +24,13 @@ The app runs `AutoMigrate` on boot, so no manual schema step is needed.
 `GITHUB_TOKEN` in the `code` service is a placeholder (`REPLACE_WITH_GH_PAT`).
 Create a token and set it on the host:
 
-- **Public** commit contributions only: classic PAT with `read:user`.
-- Include **private**-repo contributions: use a **classic PAT with the `repo`
-  scope** and enable *Settings → Profile → "Include private contributions on my
-  profile"* on GitHub. `commitContributionsByRepository` only itemizes private
-  repos the token can read; a fine-grained token is not a reliable substitute
-  here, so prefer classic + `repo` for private history.
+- **Public** only: classic PAT with `read:user`.
+- **Private** repos: classic PAT with the `repo` scope, plus *Settings → Profile
+  → "Include private contributions on my profile"*. Fine-grained tokens don't
+  reliably itemize private repos here.
 
-The sync exports `code_private_commits_visible` (see `/metrics`) as a health
-signal: it reads `1` when private commits are being surfaced (or there's no
-private activity) and `0` when GitHub reports restricted (private) contributions
-the itemized query missed — i.e. the token can't read private repos or the
-profile setting is off. Alert on `== 0`. A backing warning log carries the same
-hint.
+`/metrics` exports `code_private_commits_visible` — `0` when private commits are
+being dropped (wrong token scope / profile setting off). Alert on `== 0`.
 
 Provide the real value via a host env file / secret referenced by the compose
 service (not committed) — e.g. a `.env` on the host or your secret manager —

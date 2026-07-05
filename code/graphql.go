@@ -19,10 +19,7 @@ var graphqlURL = "https://api.github.com/graphql"
 // sync loop indefinitely.
 var httpClient = &http.Client{Timeout: 30 * time.Second}
 
-// restrictedContributionsCount and repository.isPrivate are the safety net for
-// private commits: a repo-scoped classic PAT viewing its own account itemizes
-// private repos here directly (isPrivate:true), so a nonzero restricted count
-// with zero itemized private commits means the token can't read private repos.
+// isPrivate + restrictedContributionsCount detect when private commits aren't surfaced.
 const contribQuery = `query($login:String!,$from:DateTime!,$to:DateTime!){
   user(login:$login){
     contributionsCollection(from:$from,to:$to){
@@ -129,15 +126,9 @@ func FetchCommitContributions(ctx context.Context, log *zap.SugaredLogger, token
 		}
 	}
 
-	// Private-visibility safety net. A repo-scoped token viewing its own
-	// account should itemize private commits directly (isPrivate:true). If
-	// GitHub instead reports private activity only as an anonymized restricted
-	// count while the itemized list surfaced no private commits, the token
-	// almost certainly can't read private repos (use a classic PAT with the
-	// `repo` scope) or the profile setting is off — either way private commits
-	// are being silently dropped from the heatmap. restrictedContributionsCount
-	// spans all contribution types, so this can false-positive on a window with
-	// only private issues/PRs; it stays a warning, not an error.
+	// Restricted activity but no itemized private commits => token can't read
+	// private repos (or the profile setting is off); flag it. Warns, not errors:
+	// restrictedContributionsCount also covers private issues/PRs.
 	if cc.RestrictedContributionsCount > 0 && privateCommits == 0 {
 		MetricPrivateVisible.Set(0)
 		log.Warnw("private commits not surfaced: GitHub reports restricted contributions the itemized query returned none of",
