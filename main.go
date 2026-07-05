@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"sort"
 	"strconv"
+	"sync"
 	"syscall"
 	"time"
 
@@ -26,10 +27,7 @@ import (
 	"moul.io/zapgorm2"
 )
 
-const (
-	service = "code"
-	project = "icco-cloud"
-)
+const service = "code"
 
 var log = logging.Must(logging.NewLogger(service))
 
@@ -61,12 +59,17 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	go code.RunSync(ctx, log, db, code.SyncOptions{
-		User:      user,
-		Token:     os.Getenv("GITHUB_TOKEN"),
-		Interval:  interval,
-		StartYear: startYear,
-	})
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		code.RunSync(ctx, log, db, code.SyncOptions{
+			User:      user,
+			Token:     os.Getenv("GITHUB_TOKEN"),
+			Interval:  interval,
+			StartYear: startYear,
+		})
+	}()
 
 	srv := &http.Server{Addr: ":" + port, Handler: router(db, user)}
 	go func() {
@@ -83,6 +86,10 @@ func main() {
 	if err := srv.Shutdown(shutdownCtx); err != nil {
 		log.Errorw("graceful shutdown failed", zap.Error(err))
 	}
+	wg.Wait() // let the sync goroutine observe cancellation and finish cleanly
+	if sqlDB, err := db.DB(); err == nil {
+		_ = sqlDB.Close()
+	}
 }
 
 func envOr(key, def string) string {
@@ -96,10 +103,11 @@ func router(db *gorm.DB, user string) http.Handler {
 	r := chi.NewRouter()
 	r.Use(etag.Handler(false))
 	r.Use(middleware.RealIP)
-	r.Use(logging.Middleware(log.Desugar(), project))
+	r.Use(logging.Middleware(log.Desugar()))
 
 	crs := cors.New(cors.Options{
-		AllowCredentials: true,
+		// Public, unauthenticated data: wildcard origin is only valid without credentials.
+		AllowCredentials: false,
 		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},

@@ -4,11 +4,51 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
 	"go.uber.org/zap"
 )
+
+func TestFetchCommitContributionsNon200IncludesBody(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusUnauthorized)
+		_, _ = w.Write([]byte("Bad credentials"))
+	}))
+	defer srv.Close()
+
+	old := graphqlURL
+	graphqlURL = srv.URL
+	defer func() { graphqlURL = old }()
+
+	_, err := FetchCommitContributions(context.Background(), zap.NewNop().Sugar(), "tkn", "icco", time.Now(), time.Now())
+	if err == nil {
+		t.Fatal("expected an error on HTTP 401")
+	}
+	if !strings.Contains(err.Error(), "401") || !strings.Contains(err.Error(), "Bad credentials") {
+		t.Errorf("error should carry status and body, got: %v", err)
+	}
+}
+
+func TestFetchCommitContributionsGraphQLErrors(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"errors":[{"message":"Could not resolve to a User"}]}`))
+	}))
+	defer srv.Close()
+
+	old := graphqlURL
+	graphqlURL = srv.URL
+	defer func() { graphqlURL = old }()
+
+	_, err := FetchCommitContributions(context.Background(), zap.NewNop().Sugar(), "tkn", "nobody", time.Now(), time.Now())
+	if err == nil {
+		t.Fatal("expected an error when the response carries a GraphQL errors array")
+	}
+	if !strings.Contains(err.Error(), "Could not resolve to a User") {
+		t.Errorf("error should include the GraphQL message, got: %v", err)
+	}
+}
 
 func TestFetchCommitContributionsAggregates(t *testing.T) {
 	const payload = `{"data":{"user":{"contributionsCollection":{
