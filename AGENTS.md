@@ -4,7 +4,7 @@ Guidance for coding agents working on code.natwelch.com.
 
 ## Project Overview
 
-A source code browser and vanity redirect server written in Go (`github.com/icco/code.natwelch.com`).
+A source code browser and vanity redirect server written in Go (`go.icco.me/code.natwelch.com`).
 
 ## Commands (Taskfile)
 
@@ -22,6 +22,6 @@ Run via `task <name>`:
 
 ## Conventions
 
-- Follow icco Go conventions (`github.com/icco/gutil` for logging and common helpers).
+- Follow icco Go conventions (`go.icco.me/gutil` for logging and common helpers).
 - PR titles and commits must follow Conventional Commits with lowercase subjects.
 - Ensure `task lint` and `task test` pass before committing.

@@ -1,6 +1,6 @@
 # code.natwelch.com
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/icco/code.natwelch.com.svg)](https://pkg.go.dev/github.com/icco/code.natwelch.com)
+[![Go Reference](https://pkg.go.dev/badge/go.icco.me/code.natwelch.com.svg)](https://pkg.go.dev/go.icco.me/code.natwelch.com)
 [![Go Report Card](https://goreportcard.com/badge/github.com/icco/code.natwelch.com)](https://goreportcard.com/report/github.com/icco/code.natwelch.com)
 
 Self-hosted view of [@icco](https://github.com/icco)'s GitHub commit history over time.
