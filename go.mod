@@ -1,4 +1,4 @@
-module github.com/icco/code.natwelch.com
+module go.icco.me/code.natwelch.com
 
 go 1.26.0
 

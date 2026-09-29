@@ -4,7 +4,7 @@ Guidance for coding agents working on code.natwelch.com.
 
 ## Project Overview
 
-A source code browser and vanity redirect server written in Go (`github.com/icco/code.natwelch.com`).
+A source code browser and vanity redirect server written in Go (`go.icco.me/code.natwelch.com`).
 
 ## Commands (Taskfile)
 
