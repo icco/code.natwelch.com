@@ -17,7 +17,7 @@ LABEL org.opencontainers.image.source=https://github.com/icco/code.natwelch.com
 LABEL org.opencontainers.image.description="Self-hosted GitHub commit-contribution history for @icco: in-process GraphQL sync into Postgres, self-rendered heatmap."
 LABEL org.opencontainers.image.licenses=MIT
 
-RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y ca-certificates && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' ca-certificates)" ge 20250419~deb12u2 && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -r app && useradd -r -u 1001 -g app app
 
