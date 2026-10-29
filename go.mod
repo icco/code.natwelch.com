@@ -3,7 +3,7 @@ module go.icco.me/code.natwelch.com
 go 1.26.0
 
 require (
-	github.com/go-chi/chi/v5 v5.3.2
+	github.com/go-chi/chi/v5 v5.4.0
 	github.com/go-chi/cors v1.2.2
 	github.com/prometheus/client_golang v1.23.2
 	go.icco.me/gutil v1.0.27-0.20260929105600-f3e11752b837
