@@ -1,4 +1,4 @@
-FROM golang:1.26-bookworm AS builder
+FROM golang:1.27-trixie AS builder
 
 RUN go install github.com/go-task/task/v3/cmd/task@latest
 RUN apt-get update && apt-get install -y git && apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -11,7 +11,7 @@ RUN go mod download
 COPY . .
 RUN task build
 
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 LABEL org.opencontainers.image.source=https://github.com/icco/code.natwelch.com
 LABEL org.opencontainers.image.description="Self-hosted GitHub commit-contribution history for @icco: in-process GraphQL sync into Postgres, self-rendered heatmap."
