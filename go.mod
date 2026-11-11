@@ -6,7 +6,7 @@ require (
 	github.com/go-chi/chi/v5 v5.5.0
 	github.com/go-chi/cors v1.2.2
 	github.com/prometheus/client_golang v1.25.0
-	go.icco.me/gutil v1.0.36
+	go.icco.me/gutil v1.0.37
 	go.uber.org/zap v1.28.0
 	gorm.io/driver/postgres v1.6.3
 	gorm.io/gorm v1.31.2
