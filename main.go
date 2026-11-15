@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.icco.me/code.natwelch.com/code"
@@ -102,7 +101,6 @@ func envOr(key, def string) string {
 func router(db *gorm.DB, user string) http.Handler {
 	r := chi.NewRouter()
 	r.Use(etag.Handler(false))
-	r.Use(middleware.RealIP)
 	r.Use(logging.Middleware(log.Desugar()))
 
 	crs := cors.New(cors.Options{
