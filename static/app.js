@@ -9,7 +9,7 @@ const bucket = (n, max) => {
   return Math.min(4, 1 + Math.floor((n - 1) / (max / 4)));
 };
 
-const dayOfWeek = (d) => (d.getUTCDay() + 6) % 7; // Mon=0 … Sun=6
+const dayOfWeek = (d) => (d.getUTCDay() + 6) % 7; // Mon=0 ... Sun=6
 
 function parseCSV(text) {
   const counts = new Map();
@@ -79,7 +79,7 @@ async function main() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const counts = parseCSV(await res.text());
     if (counts.size === 0) {
-      chart.textContent = "No contribution data yet — the sync is still populating.";
+      chart.textContent = "No contribution data yet; the sync is still populating.";
       return;
     }
     const years = [...new Set([...counts.keys()].map((d) => +d.slice(0, 4)))]
@@ -102,6 +102,7 @@ async function main() {
     }
     renderLegend();
   } catch (e) {
+    console.error("failed to load contribution data", e);
     chart.textContent = "Failed to load contribution data.";
   }
 }
