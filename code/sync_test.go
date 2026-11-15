@@ -3,6 +3,8 @@ package code
 import (
 	"testing"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus/testutil"
 )
 
 func TestMissingYears(t *testing.T) {
@@ -22,6 +24,28 @@ func TestMissingYears(t *testing.T) {
 	}
 	if n := len(missingYears(nil, 2008, 2010)); n != 3 {
 		t.Errorf("nil have should yield every year, got %d", n)
+	}
+}
+
+func TestVisibilityApply(t *testing.T) {
+	cases := []struct {
+		name  string
+		v     visibility
+		start float64
+		want  float64
+	}{
+		{"clean pass clears alert", visibility{}, 0, 1},
+		{"dropped sets alert", visibility{dropped: true}, 1, 0},
+		{"dropped wins over incomplete", visibility{dropped: true, incomplete: true}, 1, 0},
+		{"incomplete keeps alert", visibility{incomplete: true}, 0, 0},
+		{"incomplete keeps healthy", visibility{incomplete: true}, 1, 1},
+	}
+	for _, c := range cases {
+		MetricPrivateVisible.Set(c.start)
+		c.v.apply()
+		if got := testutil.ToFloat64(MetricPrivateVisible); got != c.want {
+			t.Errorf("%s: gauge = %v, want %v", c.name, got, c.want)
+		}
 	}
 }
 

@@ -30,6 +30,6 @@ curl -sf https://code.natwelch.com/data/contributions.csv | head
 | `code_last_sync_timestamp_seconds` | last window written; should advance every `SYNC_INTERVAL` |
 | `code_sync_errors_total` | windows that failed to fetch or upsert after retries |
 | `code_contributions_total` | commits stored for the user |
-| `code_private_commits_visible` | `0` when any window in the last sync pass had private activity GitHub didn't itemize (token scope or profile setting); alert on `== 0` |
+| `code_private_commits_visible` | `0` when any window in the last sync pass had private activity GitHub didn't itemize (token scope or profile setting), and stays `0` until a pass fetches every window cleanly; alert on `== 0` |
 
 The first backfill fetches one window per month since `SYNC_START_YEAR` and can take a while under GitHub's rate limits.

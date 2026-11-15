@@ -86,6 +86,22 @@ func refresh(ctx context.Context, log *zap.SugaredLogger, db *gorm.DB, opts Sync
 	updateTotalMetric(ctx, log, db, opts.User)
 }
 
+// visibility tracks private-commit visibility across one sync pass so an
+// existing alert is never cleared by a pass that could not check every window.
+type visibility struct {
+	dropped    bool
+	incomplete bool
+}
+
+func (v visibility) apply() {
+	switch {
+	case v.dropped:
+		setPrivateVisible(false)
+	case !v.incomplete:
+		setPrivateVisible(true)
+	}
+}
+
 func refreshStart(now time.Time) time.Time {
 	return time.Date(now.Year(), now.Month()-13, 1, 0, 0, 0, 0, time.UTC)
 }
@@ -112,25 +128,28 @@ func updateTotalMetric(ctx context.Context, log *zap.SugaredLogger, db *gorm.DB,
 
 // syncRange fetches each monthly window in [from,to) and upserts it, retrying
 // transient GitHub failures with backoff. It returns early on ctx cancellation
-// and sets MetricPrivateVisible to 0 if any window hid private commits.
+// and sets MetricPrivateVisible to 0 if any window hid private commits, or to
+// 1 only when every window was fetched and none did.
 func syncRange(ctx context.Context, log *zap.SugaredLogger, db *gorm.DB, opts SyncOptions, from, to time.Time) {
-	visible := true
-	defer func() { setPrivateVisible(visible) }()
+	var v visibility
+	defer v.apply()
 	for _, w := range monthlyWindows(from, to) {
 		select {
 		case <-ctx.Done():
+			v.incomplete = true
 			return
 		default:
 		}
 
 		days, dropped, err := fetchWithRetry(ctx, log, opts, w[0], w[1])
 		if err != nil {
+			v.incomplete = true
 			MetricSyncErrors.Inc()
 			log.Errorw("fetch window failed after retries", "from", w[0], "to", w[1], zap.Error(err))
 			continue
 		}
 		if dropped {
-			visible = false
+			v.dropped = true
 		}
 
 		rows := windowRows(opts.User, w[0], w[1], days)
