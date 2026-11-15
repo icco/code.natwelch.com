@@ -63,8 +63,27 @@ type contribResponse struct {
 }
 
 // FetchCommitContributions returns day("2006-01-02") -> commit count for a
-// single window (keep windows <= ~1 month so first:100 never truncates).
+// single window (keep windows <= ~1 month so first:100 never truncates) and
+// sets MetricPrivateVisible from that window alone.
 func FetchCommitContributions(ctx context.Context, log *zap.SugaredLogger, token, user string, from, to time.Time) (map[string]int, error) {
+	days, dropped, err := fetchCommitContributions(ctx, log, token, user, from, to)
+	if err != nil {
+		return nil, err
+	}
+	setPrivateVisible(!dropped)
+	return days, nil
+}
+
+func setPrivateVisible(visible bool) {
+	if visible {
+		MetricPrivateVisible.Set(1)
+	} else {
+		MetricPrivateVisible.Set(0)
+	}
+}
+
+// fetchCommitContributions also reports whether GitHub hid private commits.
+func fetchCommitContributions(ctx context.Context, log *zap.SugaredLogger, token, user string, from, to time.Time) (map[string]int, bool, error) {
 	reqBody, err := json.Marshal(map[string]any{
 		"query": contribQuery,
 		"variables": map[string]any{
@@ -74,34 +93,34 @@ func FetchCommitContributions(ctx context.Context, log *zap.SugaredLogger, token
 		},
 	})
 	if err != nil {
-		return nil, fmt.Errorf("marshal query: %w", err)
+		return nil, false, fmt.Errorf("marshal query: %w", err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, graphqlURL, bytes.NewReader(reqBody))
 	if err != nil {
-		return nil, fmt.Errorf("build request: %w", err)
+		return nil, false, fmt.Errorf("build request: %w", err)
 	}
 	req.Header.Set("Authorization", "bearer "+token)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("graphql request: %w", err)
+		return nil, false, fmt.Errorf("graphql request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		// GitHub puts the actionable detail (bad token, RATE_LIMITED) in the body.
 		snippet, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
-		return nil, fmt.Errorf("graphql status %d: %s", resp.StatusCode, bytes.TrimSpace(snippet))
+		return nil, false, fmt.Errorf("graphql status %d: %s", resp.StatusCode, bytes.TrimSpace(snippet))
 	}
 
 	var parsed contribResponse
 	if err := json.NewDecoder(resp.Body).Decode(&parsed); err != nil {
-		return nil, fmt.Errorf("decode response: %w", err)
+		return nil, false, fmt.Errorf("decode response: %w", err)
 	}
 	if len(parsed.Errors) > 0 {
-		return nil, fmt.Errorf("graphql error: %s", parsed.Errors[0].Message)
+		return nil, false, fmt.Errorf("graphql error: %s", parsed.Errors[0].Message)
 	}
 
 	cc := parsed.Data.User.ContributionsCollection
@@ -129,16 +148,13 @@ func FetchCommitContributions(ctx context.Context, log *zap.SugaredLogger, token
 	// Restricted activity but no itemized private commits => token can't read
 	// private repos (or the profile setting is off); flag it. Warns, not errors:
 	// restrictedContributionsCount also covers private issues/PRs.
-	if cc.RestrictedContributionsCount > 0 && privateCommits == 0 {
-		MetricPrivateVisible.Set(0)
+	dropped := cc.RestrictedContributionsCount > 0 && privateCommits == 0
+	if dropped {
 		log.Warnw("private commits not surfaced: GitHub reports restricted contributions the itemized query returned none of",
 			"restricted", cc.RestrictedContributionsCount, "public_commits", publicCommits, "from", from, "to", to,
-			"hint", "use a classic PAT with 'repo' scope and enable Settings→Profile→'Include private contributions on my profile'")
-	} else {
-		MetricPrivateVisible.Set(1)
-		if privateCommits > 0 {
-			log.Infow("private commits captured", "private", privateCommits, "public", publicCommits, "from", from, "to", to)
-		}
+			"hint", "use a classic PAT with 'repo' scope and enable Settings > Public profile > 'Include private contributions on my profile'")
+	} else if privateCommits > 0 {
+		log.Infow("private commits captured", "private", privateCommits, "public", publicCommits, "from", from, "to", to)
 	}
-	return out, nil
+	return out, dropped, nil
 }

@@ -78,11 +78,32 @@ func backfill(ctx context.Context, log *zap.SugaredLogger, db *gorm.DB, opts Syn
 	updateTotalMetric(ctx, log, db, opts.User)
 }
 
-// refresh re-syncs the trailing 13 months to catch new, backdated, and late commits.
+// refresh re-syncs the trailing 13 calendar months to catch new, backdated,
+// and late commits. It starts on a month boundary so no day is fetched partially.
 func refresh(ctx context.Context, log *zap.SugaredLogger, db *gorm.DB, opts SyncOptions) {
-	from := time.Now().UTC().AddDate(-1, -1, 0)
-	syncRange(ctx, log, db, opts, from, time.Now().UTC())
+	now := time.Now().UTC()
+	syncRange(ctx, log, db, opts, refreshStart(now), now)
 	updateTotalMetric(ctx, log, db, opts.User)
+}
+
+// visibility tracks private-commit visibility across one sync pass so an
+// existing alert is never cleared by a pass that could not check every window.
+type visibility struct {
+	dropped    bool
+	incomplete bool
+}
+
+func (v visibility) apply() {
+	switch {
+	case v.dropped:
+		setPrivateVisible(false)
+	case !v.incomplete:
+		setPrivateVisible(true)
+	}
+}
+
+func refreshStart(now time.Time) time.Time {
+	return time.Date(now.Year(), now.Month()-13, 1, 0, 0, 0, 0, time.UTC)
 }
 
 // missingYears returns the [start, end] years absent from have, ascending.
@@ -106,31 +127,32 @@ func updateTotalMetric(ctx context.Context, log *zap.SugaredLogger, db *gorm.DB,
 }
 
 // syncRange fetches each monthly window in [from,to) and upserts it, retrying
-// transient GitHub failures with backoff. It returns early on ctx cancellation.
+// transient GitHub failures with backoff. It returns early on ctx cancellation
+// and sets MetricPrivateVisible to 0 if any window hid private commits, or to
+// 1 only when every window was fetched and none did.
 func syncRange(ctx context.Context, log *zap.SugaredLogger, db *gorm.DB, opts SyncOptions, from, to time.Time) {
+	var v visibility
+	defer v.apply()
 	for _, w := range monthlyWindows(from, to) {
 		select {
 		case <-ctx.Done():
+			v.incomplete = true
 			return
 		default:
 		}
 
-		days, err := fetchWithRetry(ctx, log, opts, w[0], w[1])
+		days, dropped, err := fetchWithRetry(ctx, log, opts, w[0], w[1])
 		if err != nil {
+			v.incomplete = true
 			MetricSyncErrors.Inc()
 			log.Errorw("fetch window failed after retries", "from", w[0], "to", w[1], zap.Error(err))
 			continue
 		}
-
-		rows := make([]Contribution, 0, len(days))
-		for d, c := range days {
-			dt, perr := time.Parse("2006-01-02", d)
-			if perr != nil {
-				continue
-			}
-			rows = append(rows, Contribution{User: opts.User, Date: dt, Count: c})
+		if dropped {
+			v.dropped = true
 		}
 
+		rows := windowRows(opts.User, w[0], w[1], days)
 		if err := Upsert(ctx, db, rows); err != nil {
 			MetricSyncErrors.Inc()
 			log.Errorw("upsert window failed", "from", w[0], "to", w[1], zap.Error(err))
@@ -143,24 +165,47 @@ func syncRange(ctx context.Context, log *zap.SugaredLogger, db *gorm.DB, opts Sy
 
 // fetchWithRetry retries a window fetch up to 3 times with linear backoff so a
 // transient error or rate-limit doesn't leave a permanent hole in the data.
-func fetchWithRetry(ctx context.Context, log *zap.SugaredLogger, opts SyncOptions, from, to time.Time) (map[string]int, error) {
+func fetchWithRetry(ctx context.Context, log *zap.SugaredLogger, opts SyncOptions, from, to time.Time) (map[string]int, bool, error) {
 	var lastErr error
 	for attempt := range 3 {
 		if attempt > 0 {
 			select {
 			case <-ctx.Done():
-				return nil, ctx.Err()
+				return nil, false, ctx.Err()
 			case <-time.After(time.Duration(attempt) * 5 * time.Second):
 			}
 		}
-		days, err := FetchCommitContributions(ctx, log, opts.Token, opts.User, from, to)
+		days, dropped, err := fetchCommitContributions(ctx, log, opts.Token, opts.User, from, to)
 		if err == nil {
-			return days, nil
+			return days, dropped, nil
 		}
 		lastErr = err
 		log.Warnw("fetch window failed; retrying", "from", from, "to", to, "attempt", attempt+1, zap.Error(err))
 	}
-	return nil, lastErr
+	return nil, false, lastErr
+}
+
+// windowRows turns one window's counts into rows, with an explicit zero for
+// every day in [from,to) GitHub returned nothing for, so a day whose commits
+// disappear (deleted repo, rewritten history) is cleared on refresh.
+func windowRows(user string, from, to time.Time, days map[string]int) []Contribution {
+	counts := map[string]int{}
+	for d := time.Date(from.Year(), from.Month(), from.Day(), 0, 0, 0, 0, time.UTC); d.Before(to); d = d.AddDate(0, 0, 1) {
+		counts[d.Format("2006-01-02")] = 0
+	}
+	for d, c := range days {
+		counts[d] = c
+	}
+
+	rows := make([]Contribution, 0, len(counts))
+	for d, c := range counts {
+		dt, err := time.Parse("2006-01-02", d)
+		if err != nil {
+			continue
+		}
+		rows = append(rows, Contribution{User: user, Date: dt, Count: c})
+	}
+	return rows
 }
 
 // monthlyWindows splits [from,to) into <=1-month [start,end) pairs so the

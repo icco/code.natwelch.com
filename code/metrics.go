@@ -16,12 +16,12 @@ var (
 		Name: "code_sync_errors_total",
 		Help: "Total number of sync window errors.",
 	})
-	// MetricContributions is the commit total from the most recent backfill.
+	// MetricContributions is the commit total stored for the user after the last sync pass.
 	MetricContributions = promauto.NewGauge(prometheus.GaugeOpts{
 		Name: "code_contributions_total",
-		Help: "Commit total observed during the most recent full backfill.",
+		Help: "Commit total stored for the user after the last sync pass.",
 	})
-	// MetricPrivateVisible is 0 when private commits are being dropped. Alert on == 0.
+	// MetricPrivateVisible is 0 when the last sync pass saw private commits dropped. Alert on == 0.
 	MetricPrivateVisible = promauto.NewGauge(prometheus.GaugeOpts{
 		Name: "code_private_commits_visible",
 		Help: "0 if GitHub reports restricted contributions the itemized query missed (token scope / profile setting); else 1.",
