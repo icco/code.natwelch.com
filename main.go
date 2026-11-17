@@ -105,6 +105,7 @@ func run() error {
 
 	select {
 	case <-ctx.Done():
+		stop()
 		log.Infow("shutdown signal received")
 	case err := <-serveErr:
 		if err != nil {
