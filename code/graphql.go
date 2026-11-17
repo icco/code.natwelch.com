@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.uber.org/zap"
 )
 
@@ -17,7 +18,10 @@ var graphqlURL = "https://api.github.com/graphql"
 
 // httpClient bounds every GitHub call so a stalled connection can't wedge the
 // sync loop indefinitely.
-var httpClient = &http.Client{Timeout: 30 * time.Second}
+var httpClient = &http.Client{
+	Timeout:   30 * time.Second,
+	Transport: otelhttp.NewTransport(http.DefaultTransport),
+}
 
 // isPrivate + restrictedContributionsCount detect when private commits aren't surfaced.
 const contribQuery = `query($login:String!,$from:DateTime!,$to:DateTime!){

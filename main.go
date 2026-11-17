@@ -20,9 +20,12 @@ import (
 	"go.icco.me/code.natwelch.com/static"
 	"go.icco.me/gutil/etag"
 	"go.icco.me/gutil/logging"
+	"go.icco.me/gutil/tracing"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	gormtracing "gorm.io/plugin/opentelemetry/tracing"
 	"moul.io/zapgorm2"
 )
 
@@ -31,32 +34,53 @@ const service = "code"
 var log = logging.Must(logging.NewLogger(service))
 
 func main() {
+	if err := run(); err != nil {
+		log.Fatalw("fatal", zap.Error(err))
+	}
+}
+
+func run() error {
 	port := envOr("PORT", "8080")
 	user := envOr("GITHUB_USER", "icco")
 
 	interval, err := time.ParseDuration(envOr("SYNC_INTERVAL", "6h"))
 	if err != nil {
-		log.Fatalw("invalid SYNC_INTERVAL", zap.Error(err))
+		return fmt.Errorf("invalid SYNC_INTERVAL: %w", err)
 	}
 	startYear, err := strconv.Atoi(envOr("SYNC_START_YEAR", "2008"))
 	if err != nil {
-		log.Fatalw("invalid SYNC_START_YEAR", zap.Error(err))
+		return fmt.Errorf("invalid SYNC_START_YEAR: %w", err)
 	}
 
 	log.Infow("Starting up", "host", fmt.Sprintf("http://localhost:%s", port))
+
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	shutdown, err := tracing.Init(ctx, service)
+	if err != nil {
+		return fmt.Errorf("tracing init: %w", err)
+	}
+	defer func() {
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := shutdown(shutdownCtx); err != nil {
+			log.Warnw("tracing shutdown", zap.Error(err))
+		}
+	}()
 
 	zgl := zapgorm2.New(log.Desugar())
 	zgl.SetAsDefault()
 	db, err := gorm.Open(postgres.Open(os.Getenv("DATABASE_URL")), &gorm.Config{Logger: zgl})
 	if err != nil {
-		log.Fatalw("cannot connect to database server", zap.Error(err))
+		return fmt.Errorf("cannot connect to database server: %w", err)
+	}
+	if err := db.Use(gormtracing.NewPlugin(gormtracing.WithoutMetrics())); err != nil {
+		return fmt.Errorf("cannot register tracing plugin: %w", err)
 	}
 	if err := db.AutoMigrate(&code.Contribution{}); err != nil {
-		log.Fatalw("cannot migrate Contribution", zap.Error(err))
+		return fmt.Errorf("cannot migrate Contribution: %w", err)
 	}
-
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer stop()
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -71,15 +95,23 @@ func main() {
 	}()
 
 	srv := &http.Server{Addr: ":" + port, Handler: router(db, user)}
+	serveErr := make(chan error, 1)
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalw("server error", zap.Error(err))
+			serveErr <- err
 		}
+		close(serveErr)
 	}()
 
-	<-ctx.Done()
-	stop()
-	log.Infow("shutdown signal received")
+	select {
+	case <-ctx.Done():
+		log.Infow("shutdown signal received")
+	case err := <-serveErr:
+		if err != nil {
+			return fmt.Errorf("server error: %w", err)
+		}
+	}
+
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(shutdownCtx); err != nil {
@@ -89,6 +121,8 @@ func main() {
 	if sqlDB, err := db.DB(); err == nil {
 		_ = sqlDB.Close()
 	}
+
+	return nil
 }
 
 func envOr(key, def string) string {
@@ -145,7 +179,11 @@ func router(db *gorm.DB, user string) http.Handler {
 	})
 
 	r.Mount("/", http.FileServer(http.FS(static.Assets)))
-	return r
+	return otelhttp.NewHandler(r, service,
+		otelhttp.WithFilter(func(req *http.Request) bool {
+			return req.URL.Path != "/metrics" && req.URL.Path != "/healthz"
+		}),
+	)
 }
 
 // writeCSV emits a sorted "<keyCol>,count" CSV.
